@@ -1,4 +1,5 @@
 import { User } from 'src/user/entities/user.entity';
+import { Admin } from 'src/admin/entities/admin.entity'; 
 import {
   Column,
   CreateDateColumn,
@@ -14,12 +15,16 @@ export class OTP {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn()
   user: User;
 
+  @ManyToOne(() => Admin, { nullable: true })
+  @JoinColumn()
+  admin: Admin;
+
   @Column()
-  token: string; //hashed otp for verification
+  token: string;
 
   @Column({ type: 'enum', enum: OTPType })
   type: OTPType;

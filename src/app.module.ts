@@ -8,8 +8,9 @@ import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { OTPModule } from './otp/otp.module';
 import { OTP } from './otp/entities/otp.entity';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './user/auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { Admin } from 'typeorm';
 
 @Module({
   imports: [
@@ -26,8 +27,8 @@ import { AdminModule } from './admin/admin.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [User, OTP],
-        synchronize: true, //use synchronize false for production
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: true, 
       }),
       inject: [ConfigService],
     }),

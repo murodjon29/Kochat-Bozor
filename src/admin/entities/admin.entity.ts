@@ -1,8 +1,5 @@
-import { BaseDatabase } from "src/utils/database/baseDatabase";
-import { Entity } from "typeorm";
+import { User } from 'src/user/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('admin')
-export class Admin extends BaseDatabase {
-    
-
-}
+@Entity()
+export class Admin extends User {}
