@@ -5,8 +5,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { OTPModule } from 'src/otp/otp.module';
-import { Admin } from 'typeorm';
 import { AdminModule } from '../admin.module';
+import { Admin } from '../entities/admin.entity';
 
 @Module({
   imports: [
