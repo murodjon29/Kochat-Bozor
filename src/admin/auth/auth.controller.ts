@@ -30,7 +30,7 @@ export class AuthController {
     const user = await this.adminService.findByEmail(email);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Admins not found');
     }
     return {
       message: 'Welcome to your profile',
