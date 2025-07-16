@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { OTPModule } from './otp/otp.module';
 import { AuthModule } from './user/auth/auth.module';
 import { AdminModule } from './admin/admin.module';
+import { AdminAuthModule } from './admin/auth/auth.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AdminModule } from './admin/admin.module';
     OTPModule,
     AuthModule,
     AdminModule,
+    AdminAuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,19 +4,19 @@ import { UserService } from 'src/user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
-@Controller('auth')
+@Controller('auth/user')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
   ) {}
 
-  @Post('user/login')
+  @Post('login')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
-  @Post('user/reset-password')
+  @Post('reset-password')
   async resetPassword(
     @Body() { token, password }: { token: string; password: string },
   ) {
@@ -24,7 +24,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('user/profile')
+  @Get('profile')
   async getProfile(@Req() request) {
     const email = request.user.email; 
     const user = await this.userService.findByEmail(email);

@@ -4,19 +4,19 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AdminService } from '../admin.service';
 
-@Controller('auth')
+@Controller('auth/admin')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly adminService: AdminService,
   ) {}
 
-  @Post('admin/login')
+  @Post('login')
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
-  @Post('admin/reset-password')
+  @Post('reset-password')
   async resetPassword(
     @Body() { token, password }: { token: string; password: string },
   ) {
@@ -24,7 +24,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('admin/profile')
+  @Get('profile')
   async getProfile(@Req() request) {
     const email = request.user.email; 
     const user = await this.adminService.findByEmail(email);
