@@ -9,7 +9,11 @@ import { OTPModule } from 'src/otp/otp.module';
 import { EmailModule } from 'src/email/email.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Admin]), forwardRef(() => OTPModule), EmailModule],
+  imports: [
+    TypeOrmModule.forFeature([Admin]),
+    forwardRef(() => OTPModule),
+    EmailModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],

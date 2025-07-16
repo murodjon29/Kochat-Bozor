@@ -30,18 +30,16 @@ export class UserService {
       throw new BadRequestException({ message: 'Email already exists' });
     }
 
-
     const existingPhone = await this.userRepository.findOne({
-      where: { phone: dto.phone},
+      where: { phone: dto.phone },
     });
 
     if (existingPhone) {
       throw new BadRequestException({ message: 'Phone already exists' });
     }
 
-
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);    
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = this.userRepository.create({
       ...dto,
@@ -49,7 +47,7 @@ export class UserService {
       password: hashedPassword,
     });
 
-    await this.userRepository.save(newUser)
+    await this.userRepository.save(newUser);
     return this.emailVerification(newUser, OTPType.OTP);
   }
 

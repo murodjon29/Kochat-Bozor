@@ -1,5 +1,5 @@
 import { User } from 'src/user/entities/user.entity';
-import { Admin } from 'src/admin/entities/admin.entity'; 
+import { Admin } from 'src/admin/entities/admin.entity';
 import {
   Column,
   CreateDateColumn,

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import {  Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { OTPService } from 'src/otp/otp.service';
@@ -92,7 +92,4 @@ export class AuthService {
 
     return 'Password reset successfully';
   }
-
-
-  
 }

@@ -92,7 +92,4 @@ export class AuthService {
 
     return 'Password reset successfully';
   }
-
-
-  
 }

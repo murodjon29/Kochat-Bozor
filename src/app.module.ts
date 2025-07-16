@@ -26,7 +26,7 @@ import { AdminAuthModule } from './admin/auth/auth.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, 
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
@@ -34,7 +34,7 @@ import { AdminAuthModule } from './admin/auth/auth.module';
     OTPModule,
     AuthModule,
     AdminModule,
-    AdminAuthModule
+    AdminAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

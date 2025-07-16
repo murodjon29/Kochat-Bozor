@@ -30,18 +30,16 @@ export class AdminService {
       throw new BadRequestException({ message: 'Email already exists' });
     }
 
-
     const existingPhone = await this.adminRepository.findOne({
-      where: { phone: dto.phone},
+      where: { phone: dto.phone },
     });
 
     if (existingPhone) {
       throw new BadRequestException({ message: 'Phone already exists' });
     }
 
-
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);    
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = this.adminRepository.create({
       ...dto,
@@ -49,7 +47,7 @@ export class AdminService {
       password: hashedPassword,
     });
 
-    await this.adminRepository.save(newUser)
+    await this.adminRepository.save(newUser);
     return this.emailVerification(newUser, OTPType.OTP);
   }
 
