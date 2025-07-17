@@ -1,43 +1,32 @@
-import { Body, Controller, NotFoundException, Post } from '@nestjs/common';
+import { Body, Controller, Post, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { AdminDto } from './dto/admin.dto';
-import { RequestTokenDto } from './dto/requestToken.dto';
-import { OTPType } from 'src/otp/type/otpType';
+import { RequestTokenDto } from '../user/dto/request-token.dto';
+import { OTPType } from 'src/utils/otp/types/otp-type';
+import { UserDto } from 'src/user/dto/user.dto';
 
 @Controller('admin')
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
   @Post('register')
-  async register(@Body() adminDto: AdminDto) {
+  async register(@Body() adminDto: UserDto) {
     await this.adminService.register(adminDto);
-    return { message: 'admin created successfully and OTP sent to email' };
+    return { message: 'Admin created successfully and OTP sent to email' };
   }
 
   @Post('request-otp')
   async requestOTP(@Body() dto: RequestTokenDto) {
-    const { email } = dto;
-    const admin = await this.adminService.findByEmail(email);
-    if (!admin) {
-      throw new NotFoundException('admin not found');
-    }
-
-    //send otp
+    const admin = await this.adminService.findByEmail(dto.email);
+    if (!admin) throw new NotFoundException('Admin not found');
     await this.adminService.emailVerification(admin, OTPType.OTP);
-    return { message: 'OTP sent successfully.Please check email' };
+    return { message: 'OTP sent successfully. Please check email' };
   }
 
   @Post('forgot-password')
-  async forgotPassword(@Body() forgotDto: RequestTokenDto) {
-    const { email } = forgotDto;
-    const admin = await this.adminService.findByEmail(email);
-    if (!admin) {
-      throw new NotFoundException('admin not found');
-    }
-
+  async forgotPassword(@Body() dto: RequestTokenDto) {
+    const admin = await this.adminService.findByEmail(dto.email);
+    if (!admin) throw new NotFoundException('Admin not found');
     await this.adminService.emailVerification(admin, OTPType.RESET_LINK);
-    return {
-      message: 'Password reset link has been sent.Please check your mail.',
-    };
+    return { message: 'Password reset link has been sent. Please check your mail' };
   }
-}
+} 

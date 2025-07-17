@@ -1,8 +1,8 @@
-import { Body, Controller, NotFoundException, Post } from '@nestjs/common';
+import { Body, Controller, Post, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
-import { RequestTokenDto } from './dto/requestToken.dto';
-import { OTPType } from 'src/otp/type/otpType';
+import { RequestTokenDto } from './dto/request-token.dto';
+import { OTPType } from 'src/utils/otp/types/otp-type';
 
 @Controller('user')
 export class UserController {
@@ -16,28 +16,17 @@ export class UserController {
 
   @Post('request-otp')
   async requestOTP(@Body() dto: RequestTokenDto) {
-    const { email } = dto;
-    const user = await this.userService.findByEmail(email);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    //send otp
+    const user = await this.userService.findByEmail(dto.email);
+    if (!user) throw new NotFoundException('User not found');
     await this.userService.emailVerification(user, OTPType.OTP);
-    return { message: 'OTP sent successfully.Please check email' };
+    return { message: 'OTP sent successfully. Please check email' };
   }
 
   @Post('forgot-password')
-  async forgotPassword(@Body() forgotDto: RequestTokenDto) {
-    const { email } = forgotDto;
-    const user = await this.userService.findByEmail(email);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
+  async forgotPassword(@Body() dto: RequestTokenDto) {
+    const user = await this.userService.findByEmail(dto.email);
+    if (!user) throw new NotFoundException('User not found');
     await this.userService.emailVerification(user, OTPType.RESET_LINK);
-    return {
-      message: 'Password reset link has been sent.Please check your mail.',
-    };
+    return { message: 'Password reset link has been sent. Please check your mail' };
   }
 }

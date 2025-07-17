@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Admin } from '../entities/admin.entity';
-import { AdminAuthService } from './auth.service';
-import { AdminAuthController } from './auth.controller';
+import { Saller } from '../entities/saller.entity';
+import { SallerAuthService } from './auth.service';
+import { SallerAuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OTPModule } from '../../utils/otp/otp.module';
 import { forwardRef } from '@nestjs/common';
-import { AdminModule } from '../admin.module';
+import { SallerModule } from '../saller.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin]),
+    TypeOrmModule.forFeature([Saller]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -21,9 +21,9 @@ import { AdminModule } from '../admin.module';
       }),
     }),
     OTPModule,
-    forwardRef(() => AdminModule),
+    forwardRef(() => SallerModule),
   ],
-  controllers: [AdminAuthController],
-  providers: [AdminAuthService],
+  controllers: [SallerAuthController],
+  providers: [SallerAuthService],
 })
-export class AdminAuthModule {}
+export class SallerAuthModule {}

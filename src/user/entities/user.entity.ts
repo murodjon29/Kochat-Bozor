@@ -1,5 +1,5 @@
-import { BaseDatabase } from 'src/utils/database/baseDatabase';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseDatabase } from 'src/utils/database/base-database.ts';
+import { Column, Entity } from 'typeorm';
 
 @Entity('user')
 export class User extends BaseDatabase {

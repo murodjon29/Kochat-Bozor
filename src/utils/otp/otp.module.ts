@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { OTP } from './entities/otp.entity';
 import { OTPService } from './otp.service';
 import { JwtModule } from '@nestjs/jwt';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OTP]), JwtModule],
+  imports: [JwtModule, CacheModule.register(), ConfigModule],
   providers: [OTPService],
   exports: [OTPService],
 })

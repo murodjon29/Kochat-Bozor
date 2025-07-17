@@ -7,11 +7,11 @@ export class UserDto {
   @IsString()
   phone: string;
 
-  @IsString()
   @IsEmail()
+  @IsString()
   email: string;
 
-  @IsString()
   @IsStrongPassword()
+  @IsString()
   password: string;
 }
