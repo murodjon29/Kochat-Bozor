@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -20,12 +24,20 @@ export class UserService {
 
   async register(dto: UserDto): Promise<void> {
     const { email, password } = dto;
-    const existingUser = await this.userRepository.findOne({ where: { email: email.toLowerCase() } });
+    const existingUser = await this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
     if (existingUser) throw new BadRequestException('Email already exists');
-    const existingPhone = await this.userRepository.findOne({ where: { phone: dto.phone } });
+    const existingPhone = await this.userRepository.findOne({
+      where: { phone: dto.phone },
+    });
     if (existingPhone) throw new BadRequestException('Phone already exists');
     const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt());
-    const newUser = this.userRepository.create({ ...dto, email: email.toLowerCase(), password: hashedPassword });
+    const newUser = this.userRepository.create({
+      ...dto,
+      email: email.toLowerCase(),
+      password: hashedPassword,
+    });
     await this.userRepository.save(newUser);
     await this.emailVerification(newUser, OTPType.OTP);
   }
@@ -49,6 +61,57 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.userRepository.findOne({ where: { email: email.toLowerCase() } });
+    return await this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
+  }
+
+  async findById(id: number): Promise<User> {
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
+      if (!user) throw new NotFoundException('User not found');
+      return user;
+    } catch (error) {
+      throw new BadRequestException(`Error finding user: ${error.message}`);
+    }
+  }
+
+  async updateProfile(id: number, data: Partial<User>): Promise<User> {
+    try {
+      const user = await this.userRepository.findOne({ where: { id } });
+      if (!user) throw new NotFoundException(`Not found user: ${id}`);
+      if (
+        data.email &&
+        (await this.userRepository.findOne({ where: { email: data.email } }))
+      )
+        throw new BadRequestException('Email already exits');
+      if (
+        data.phone &&
+        (await this.userRepository.findOne({ where: { phone: data.phone } }))
+      )
+        throw new BadRequestException('Phone already exits');
+      if (data.password) {
+        data.password = await bcrypt.hash(
+          data.password,
+          await bcrypt.genSalt(),
+        );
+      }
+      await this.userRepository.update(id, { ...data });
+      const updatedUser = await this.userRepository.findOne({ where: { id } });
+      return updatedUser;
+    } catch (error) {
+      throw new BadRequestException(`Error updating user: ${error.message}`);
+    }
+  }
+
+  async deleteAccount(id: number) {
+    try {
+      const user = await this.userRepository.findBy({ id });
+      if (!user) throw new NotFoundException(`User not found: ${id}`);
+      await this.userRepository.delete(id);
+      return { message: 'User deleted succesfully' };
+    } catch (error) {
+      throw new BadRequestException(`Error deleting user: ${error.message}`);
+    }
   }
 }

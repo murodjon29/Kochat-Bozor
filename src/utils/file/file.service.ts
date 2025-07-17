@@ -12,7 +12,9 @@ export class FileService {
     const fileName = `${file.originalname.split('.')[0]}_${Date.now()}${ext.toLowerCase()}`;
     const filePath = resolve(__dirname, '..', '..', '..', '..', 'images');
     if (!existsSync(filePath)) mkdirSync(filePath, { recursive: true });
-    await writeFile(join(filePath, fileName), file.buffer, (err) => { if (err) throw err; });
+    await writeFile(join(filePath, fileName), file.buffer, (err) => {
+      if (err) throw err;
+    });
     return `${this.configService.get<string>('BASE_API')}/${fileName}`;
   }
 
@@ -20,12 +22,18 @@ export class FileService {
     const prefix = this.configService.get<string>('BASE_API');
     const file = fileName.replace(prefix, '');
     const filePath = resolve(__dirname, '..', '..', '..', '..', 'images', file);
-    if (!existsSync(filePath)) throw new BadRequestException(`File does not exist ${filePath}`);
-    await unlink(filePath, (err) => { if (err) throw err; });
+    if (!existsSync(filePath))
+      throw new BadRequestException(`File does not exist ${filePath}`);
+    await unlink(filePath, (err) => {
+      if (err) throw err;
+    });
   }
 
   async existFile(fileName: string): Promise<boolean> {
-    const file = fileName.replace(this.configService.get<string>('BASE_API'), '');
+    const file = fileName.replace(
+      this.configService.get<string>('BASE_API'),
+      '',
+    );
     const filePath = resolve(__dirname, '..', '..', '..', '..', 'images', file);
     return existsSync(filePath);
   }

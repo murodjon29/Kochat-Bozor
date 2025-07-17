@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { User } from '../entities/user.entity'; // User entity qo‘shildi
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserModule } from '../user/user.module';
-import { OTPModule } from 'src/utils/otp/otp.module';
+import { OTPModule } from '../../utils/otp/otp.module';
+import { forwardRef } from '@nestjs/common';
+import { UserModule } from '../user.module';
+import { UserAuthController } from './auth.controller';
+import { UserAuthService } from './auth.service';
 
 @Module({
   imports: [
@@ -20,9 +21,9 @@ import { OTPModule } from 'src/utils/otp/otp.module';
       }),
     }),
     OTPModule,
-    UserModule,
+    forwardRef(() => UserModule),
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [UserAuthController],
+  providers: [UserAuthService],
 })
-export class AuthModule {}
+export class UserAuthModule {}

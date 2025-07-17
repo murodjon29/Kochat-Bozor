@@ -1,14 +1,18 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserLoginDto } from './dto/user-login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
+import { User } from '../entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { OTPService } from 'src/utils/otp/otp.service';
 
 @Injectable()
-export class AuthService {
+export class UserAuthService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService,
@@ -17,12 +21,18 @@ export class AuthService {
 
   async login(dto: UserLoginDto) {
     const { email, password, otp } = dto;
-    const user = await this.userRepository.findOne({ where: { email: email.toLowerCase() } });
+    const user = await this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
     if (!user) throw new UnauthorizedException('Email doesnt exist');
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) throw new UnauthorizedException('Invalid credentials');
     if (user.accountStatus === 'unverified') {
-      if (!otp) return { message: 'Your account is not verified. Please provide your otp to verify' };
+      if (!otp)
+        return {
+          message:
+            'Your account is not verified. Please provide your otp to verify',
+        };
       await this.verifyToken(user.id, otp);
     }
     const payload = { id: user.id, email: user.email };

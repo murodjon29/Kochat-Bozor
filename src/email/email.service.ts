@@ -23,9 +23,13 @@ export class EmailService {
     });
   }
 
-  async sendEmail(dto: { recipients: string[]; subject: string; html: string }) {
+  async sendEmail(dto: {
+    recipients: string[];
+    subject: string;
+    html: string;
+  }) {
     const { recipients, subject, html } = dto;
-    const cacheKey = `email-sent-${recipients.join('-')}-${Date.now()}`;    
+    const cacheKey = `email-sent-${recipients.join('-')}-${Date.now()}`;
     try {
       await this.transporter.sendMail({
         from: this.configService.get<string>('EMAIL_USER'),

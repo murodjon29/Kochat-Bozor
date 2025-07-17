@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OTPModule } from './utils/otp/otp.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
+import { UserAuthModule } from './user/auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { AdminAuthModule } from './admin/auth/auth.module';
 import { EmailModule } from './email/email.module';
@@ -33,7 +33,7 @@ import { SallerAuthModule } from './saller/auth/auth.module';
     }),
     UserModule,
     OTPModule,
-    AuthModule,
+    UserAuthModule,
     AdminModule,
     AdminAuthModule,
     SallerModule,

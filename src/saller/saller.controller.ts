@@ -1,8 +1,20 @@
-import { Body, Controller, Post, NotFoundException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  NotFoundException,
+  Delete,
+  UseGuards,
+  Param,
+  Put,
+  Get,
+} from '@nestjs/common';
 import { SallerService } from './saller.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
 import { UserDto } from 'src/user/dto/user.dto';
 import { OTPType } from 'src/utils/otp/types/otp-type';
+import { JwtAuthGuard } from 'src/user/auth/guard/jwt-auth.guard';
+import { Saller } from './entities/saller.entity';
 
 @Controller('saller')
 export class SallerController {
@@ -27,6 +39,26 @@ export class SallerController {
     const saller = await this.sallerService.findByEmail(dto.email);
     if (!saller) throw new NotFoundException('Saller not found');
     await this.sallerService.emailVerification(saller, OTPType.RESET_LINK);
-    return { message: 'Password reset link has been sent. Please check your mail' };
+    return {
+      message: 'Password reset link has been sent. Please check your mail',
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async getProfile(@Param('id') id: number) {
+    return this.sallerService.findById(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async updateProfile(@Param('id') id: number, @Body() data: Partial<Saller>) {
+    return this.sallerService.updateProfile(id, data);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deleteAccount(@Param('id') id: number) {
+    return this.sallerService.deleteAccount(id);
   }
 }

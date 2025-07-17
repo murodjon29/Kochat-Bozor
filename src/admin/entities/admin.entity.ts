@@ -2,7 +2,7 @@ import { BaseDatabase } from 'src/utils/database/base-database.ts';
 import { Column, Entity } from 'typeorm';
 
 @Entity('admin')
-export class Admin extends BaseDatabase{
+export class Admin extends BaseDatabase {
   @Column()
   fullName: string;
 
