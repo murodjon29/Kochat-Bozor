@@ -68,8 +68,7 @@ export class UserController {
     return await this.userService.updateProfile(id, data);
   }
 
-  @UseGuards(JwtAuthGuard, SelfGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Delete(':id')
   async deleteAccount(@Param('id') id: number) {
     if (isNaN(id)) throw new BadRequestException('Invalid user ID');
