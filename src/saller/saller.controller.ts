@@ -3,18 +3,24 @@ import {
   Controller,
   Post,
   NotFoundException,
-  Delete,
-  UseGuards,
-  Param,
-  Put,
   Get,
+  Put,
+  Delete,
+  Param,
+  UseGuards,
+  Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { SallerService } from './saller.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
 import { UserDto } from 'src/user/dto/user.dto';
 import { OTPType } from 'src/utils/otp/types/otp-type';
-import { JwtAuthGuard } from 'src/user/auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
 import { Saller } from './entities/saller.entity';
+import { SelfGuard } from 'src/utils/guard/self.guard';
+import { RolesGuard } from 'src/utils/guard/roles.guard';
+import { CheckRoles } from 'src/utils/decorators/roles.decorator';
+import { Role } from 'src/utils/enum';
 
 @Controller('saller')
 export class SallerController {
@@ -39,26 +45,34 @@ export class SallerController {
     const saller = await this.sallerService.findByEmail(dto.email);
     if (!saller) throw new NotFoundException('Saller not found');
     await this.sallerService.emailVerification(saller, OTPType.RESET_LINK);
-    return {
-      message: 'Password reset link has been sent. Please check your mail',
-    };
+    return { message: 'Password reset link has been sent. Please check your mail' };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Get(':id')
   async getProfile(@Param('id') id: number) {
-    return this.sallerService.findById(id);
+    if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
+    return await this.sallerService.findById(id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Put(':id')
   async updateProfile(@Param('id') id: number, @Body() data: Partial<Saller>) {
-    return this.sallerService.updateProfile(id, data);
+    if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
+    return await this.sallerService.updateProfile(id, data);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Delete(':id')
   async deleteAccount(@Param('id') id: number) {
-    return this.sallerService.deleteAccount(id);
+    if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
+    return await this.sallerService.deleteAccount(id);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @CheckRoles(Role.ADMIN)
+  @Get()
+  async getAllSallers() {
+    return await this.sallerService.findAllSallers();
   }
 }

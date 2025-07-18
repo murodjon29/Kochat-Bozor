@@ -10,7 +10,7 @@ import {
 import { SallerAuthService } from './auth.service';
 import { SallerService } from '../saller.service';
 import { SallerLoginDto } from './dto/saller-login.dto';
-import { JwtAuthGuard } from 'src/user/auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
 
 @Controller('auth/saller')
 export class SallerAuthController {

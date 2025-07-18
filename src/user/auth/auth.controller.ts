@@ -10,7 +10,7 @@ import {
 import { UserAuthService } from './auth.service';
 import { UserService } from '../user.service';
 import { UserLoginDto } from './dto/user-login.dto';
-import { JwtAuthGuard } from './guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../../utils/guard/jwt-auth.guard';
 
 @Controller('auth/user')
 export class UserAuthController {

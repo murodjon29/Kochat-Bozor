@@ -10,7 +10,7 @@ import {
 import { AdminAuthService } from './auth.service';
 import { AdminService } from '../admin.service';
 import { AdminLoginDto } from './dto/admin-login.dto';
-import { JwtAuthGuard } from 'src/user/auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
 
 @Controller('auth/admin')
 export class AdminAuthController {
@@ -41,6 +41,7 @@ export class AdminAuthController {
       fullName: admin.fullName,
       email: admin.email,
       phone: admin.phone,
+      role: admin.role,
     };
   }
 }

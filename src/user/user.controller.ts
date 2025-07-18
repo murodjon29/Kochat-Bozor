@@ -3,18 +3,23 @@ import {
   Controller,
   Post,
   NotFoundException,
+  Get,
+  Put,
   Delete,
   Param,
   UseGuards,
-  Put,
-  Get,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
 import { RequestTokenDto } from './dto/request-token.dto';
 import { OTPType } from 'src/utils/otp/types/otp-type';
-import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
+import { JwtAuthGuard } from '../utils/guard/jwt-auth.guard';
 import { User } from './entities/user.entity';
+import { RolesGuard } from 'src/utils/guard/roles.guard';
+import { CheckRoles } from 'src/utils/decorators/roles.decorator';
+import { SelfGuard } from 'src/utils/guard/self.guard';
+import { Role } from 'src/utils/enum';
 
 @Controller('user')
 export class UserController {
@@ -39,26 +44,36 @@ export class UserController {
     const user = await this.userService.findByEmail(dto.email);
     if (!user) throw new NotFoundException('User not found');
     await this.userService.emailVerification(user, OTPType.RESET_LINK);
-    return {
-      message: 'Password reset link has been sent. Please check your mail',
-    };
+    return { message: 'Password reset link has been sent. Please check your mail' };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
+  @Get()
+  async getAllUsers() {
+    return await this.userService.findAllUser();
+  }
+
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Get(':id')
   async getProfile(@Param('id') id: number) {
-    return this.userService.findById(id);
+    if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    return await this.userService.findById(id);
   }
-
-  @UseGuards(JwtAuthGuard)
+  
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Put(':id')
   async updateProfile(@Param('id') id: number, @Body() data: Partial<User>) {
-    return this.userService.updateProfile(id, data);
+    if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    return await this.userService.updateProfile(id, data);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SelfGuard, RolesGuard)
+  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Delete(':id')
   async deleteAccount(@Param('id') id: number) {
-    return this.userService.deleteAccount(id);
+    if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    return await this.userService.deleteAccount(id);
   }
+
 }
