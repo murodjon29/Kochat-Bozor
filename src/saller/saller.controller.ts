@@ -34,16 +34,16 @@ export class SallerController {
 
   @Post('request-otp')
   async requestOTP(@Body() dto: RequestTokenDto) {
-    const saller = await this.sallerService.findByEmail(dto.email);
-    if (!saller) throw new NotFoundException('Saller not found');
+    const normalizedEmail = dto.email.toLowerCase();
+    const saller = await this.sallerService.findByEmail(normalizedEmail);
     await this.sallerService.emailVerification(saller, OTPType.OTP);
     return { message: 'OTP sent successfully. Please check email' };
   }
 
   @Post('forgot-password')
   async forgotPassword(@Body() dto: RequestTokenDto) {
-    const saller = await this.sallerService.findByEmail(dto.email);
-    if (!saller) throw new NotFoundException('Saller not found');
+    const normalizedEmail = dto.email.toLowerCase();
+    const saller = await this.sallerService.findByEmail(normalizedEmail);
     await this.sallerService.emailVerification(saller, OTPType.RESET_LINK);
     return { message: 'Password reset link has been sent. Please check your mail' };
   }
@@ -70,7 +70,7 @@ export class SallerController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN)
+  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Get()
   async getAllSallers() {
     return await this.sallerService.findAllSallers();

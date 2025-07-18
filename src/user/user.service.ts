@@ -26,8 +26,9 @@ export class UserService {
   async register(dto: UserDto): Promise<void> {
     try {
       const { email, password, phone } = dto;
+      const normalizedEmail = email.toLowerCase();
       const existingUser = await this.userRepository.findOne({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
       });
       if (existingUser) throw new BadRequestException('Email already exists');
       const existingPhoneUser = await this.userRepository.findOne({
@@ -37,7 +38,7 @@ export class UserService {
       const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt());
       const newUser = this.userRepository.create({
         ...dto,
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         password: hashedPassword,
       });
       await this.userRepository.save(newUser);
@@ -48,7 +49,7 @@ export class UserService {
   }
 
   async emailVerification(user: User, otpType: OTPType) {
-    try {   
+    try {
       const token = await this.otpService.generateTokenForUser(user.id, otpType);
       if (otpType === OTPType.OTP) {
         await this.emailService.sendEmail({
@@ -71,10 +72,11 @@ export class UserService {
 
   async findByEmail(email: string): Promise<User> {
     try {
+      const normalizedEmail = email.toLowerCase();
       const user = await this.userRepository.findOne({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
       });
-      if (!user) throw new NotFoundException('User not found');
+      if (!user) throw new NotFoundException(`User not found with email: ${email}`);
       return user;
     } catch (error) {
       throw new InternalServerErrorException(`Error finding user: ${error.message}`);

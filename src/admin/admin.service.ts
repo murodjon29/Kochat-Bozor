@@ -29,15 +29,20 @@ export class AdminService {
 
   async register(dto: UserDto): Promise<void> {
     try {
-      const { email, password } = dto;
+      const { email, password, phone } = dto;
+      const normalizedEmail = email.toLowerCase();
       const existingAdmin = await this.adminRepository.findOne({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
       });
       if (existingAdmin) throw new BadRequestException('Email already exists');
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const existingPhoneAdmin = await this.adminRepository.findOne({
+        where: { phone },
+      });
+      if (existingPhoneAdmin) throw new BadRequestException('Phone already exists');
+      const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt());
       const newAdmin = this.adminRepository.create({
         ...dto,
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         password: hashedPassword,
       });
       await this.adminRepository.save(newAdmin);
@@ -70,53 +75,96 @@ export class AdminService {
   }
 
   async findByEmail(email: string): Promise<Admin> {
-    const admin = await this.adminRepository.findOne({ where: { email: email.toLowerCase() } });
-    if (!admin) throw new NotFoundException(`Admin not found: ${email}`);
-    return admin;
+    try {
+      const normalizedEmail = email.toLowerCase();
+      console.log(`Searching for admin with email: ${normalizedEmail}`);
+      const admin = await this.adminRepository.findOne({
+        where: { email: normalizedEmail },
+      });
+      if (!admin) throw new NotFoundException(`Admin not found with email: ${email}`);
+      return admin;
+    } catch (error) {
+      throw new InternalServerErrorException(`Error finding admin: ${error.message}`);
+    }
   }
 
   async findById(id: number): Promise<Admin> {
-    const admin = await this.adminRepository.findOne({ where: { id } });
-    if (!admin) throw new NotFoundException(`Admin not found: ${id}`);
-    return admin;
+    try {
+      if (isNaN(id)) throw new BadRequestException('Invalid admin ID');
+      const admin = await this.adminRepository.findOne({ where: { id } });
+      if (!admin) throw new NotFoundException(`Admin not found: ${id}`);
+      return admin;
+    } catch (error) {
+      throw new InternalServerErrorException(`Error finding admin: ${error.message}`);
+    }
   }
 
   async updateProfile(id: number, data: Partial<Admin>): Promise<Admin> {
-    const admin = await this.findById(id);
-    if (data.email && data.email.toLowerCase() !== admin.email) {
-      const emailExists = await this.adminRepository.findOne({ where: { email: data.email.toLowerCase() } });
-      if (emailExists) throw new BadRequestException('Email already exists');
+    try {
+      if (isNaN(id)) throw new BadRequestException('Invalid admin ID');
+      const admin = await this.findById(id);
+      if (data.email && data.email.toLowerCase() !== admin.email) {
+        const emailExists = await this.adminRepository.findOne({
+          where: { email: data.email.toLowerCase() },
+        });
+        if (emailExists) throw new BadRequestException('Email already exists');
+      }
+      if (data.phone && data.phone !== admin.phone) {
+        const phoneExists = await this.adminRepository.findOne({
+          where: { phone: data.phone },
+        });
+        if (phoneExists) throw new BadRequestException('Phone already exists');
+      }
+      if (data.password) {
+        data.password = await bcrypt.hash(data.password, await bcrypt.genSalt());
+      }
+      await this.adminRepository.update(id, data);
+      return await this.findById(id);
+    } catch (error) {
+      throw new InternalServerErrorException(`Error updating admin: ${error.message}`);
     }
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, 10);
-    }
-    await this.adminRepository.update(id, data);
-    return this.findById(id);
   }
 
   async deleteAccount(id: number): Promise<{ message: string }> {
-    const admin = await this.findById(id);
-    await this.adminRepository.remove(admin);
-    return { message: 'Admin deleted successfully' };
+    try {
+      if (isNaN(id)) throw new BadRequestException('Invalid admin ID');
+      const admin = await this.findById(id);
+      await this.adminRepository.remove(admin);
+      return { message: 'Admin deleted successfully' };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error deleting admin: ${error.message}`);
+    }
   }
 
   async createUser(dto: UserDto): Promise<{ message: string }> {
-    await this.userService.register(dto);
-    const user = await this.userService.findByEmail(dto.email);
-    await this.userService.emailVerification(user, OTPType.OTP);
-    return { message: 'User created successfully and OTP sent to email' };
+    try {
+      await this.userService.register(dto);
+      const user = await this.userService.findByEmail(dto.email.toLowerCase());
+      await this.userService.emailVerification(user, OTPType.OTP);
+      return { message: 'User created successfully and OTP sent to email' };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error creating user: ${error.message}`);
+    }
   }
 
   async createSaller(dto: UserDto): Promise<{ message: string }> {
-    await this.sallerService.register(dto);
-    const saller = await this.sallerService.findByEmail(dto.email);
-    await this.sallerService.emailVerification(saller, OTPType.OTP);
-    return { message: 'Saller created successfully and OTP sent to email' };
+    try {
+      await this.sallerService.register(dto);
+      const saller = await this.sallerService.findByEmail(dto.email.toLowerCase());
+      await this.sallerService.emailVerification(saller, OTPType.OTP);
+      return { message: 'Saller created successfully and OTP sent to email' };
+    } catch (error) {
+      throw new InternalServerErrorException(`Error creating saller: ${error.message}`);
+    }
   }
 
   async getAdmins(): Promise<Admin[]> {
-    const admins = await this.adminRepository.find();
-    if (!admins.length) throw new NotFoundException('No admins found');
-    return admins;
+    try {
+      const admins = await this.adminRepository.find();
+      if (!admins.length) throw new NotFoundException('No admins found');
+      return admins;
+    } catch (error) {
+      throw new InternalServerErrorException(`Error finding admins: ${error.message}`);
+    }
   }
 }

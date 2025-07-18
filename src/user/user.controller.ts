@@ -33,16 +33,16 @@ export class UserController {
 
   @Post('request-otp')
   async requestOTP(@Body() dto: RequestTokenDto) {
-    const user = await this.userService.findByEmail(dto.email);
-    if (!user) throw new NotFoundException('User not found');
+    const normalizedEmail = dto.email.toLowerCase();
+    const user = await this.userService.findByEmail(normalizedEmail);
     await this.userService.emailVerification(user, OTPType.OTP);
     return { message: 'OTP sent successfully. Please check email' };
   }
 
   @Post('forgot-password')
   async forgotPassword(@Body() dto: RequestTokenDto) {
-    const user = await this.userService.findByEmail(dto.email);
-    if (!user) throw new NotFoundException('User not found');
+    const normalizedEmail = dto.email.toLowerCase();
+    const user = await this.userService.findByEmail(normalizedEmail);
     await this.userService.emailVerification(user, OTPType.RESET_LINK);
     return { message: 'Password reset link has been sent. Please check your mail' };
   }
@@ -60,7 +60,7 @@ export class UserController {
     if (isNaN(id)) throw new BadRequestException('Invalid user ID');
     return await this.userService.findById(id);
   }
-  
+
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Put(':id')
   async updateProfile(@Param('id') id: number, @Body() data: Partial<User>) {
@@ -74,5 +74,4 @@ export class UserController {
     if (isNaN(id)) throw new BadRequestException('Invalid user ID');
     return await this.userService.deleteAccount(id);
   }
-
 }

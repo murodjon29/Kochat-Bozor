@@ -1,6 +1,6 @@
 import { BaseDatabase } from 'src/utils/database/base-database.ts';
 import { Role } from 'src/utils/enum';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 
 @Entity('saller')
 export class Saller extends BaseDatabase {
@@ -21,4 +21,6 @@ export class Saller extends BaseDatabase {
 
   @Column({ default: Role.SALLER })
   role: Role;
+
+ 
 }

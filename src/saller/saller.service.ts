@@ -25,16 +25,20 @@ export class SallerService {
 
   async register(dto: UserDto): Promise<void> {
     try {
-      
-      const { email, password } = dto;
+      const { email, password, phone } = dto;
+      const normalizedEmail = email.toLowerCase();
       const existingSaller = await this.sallerRepository.findOne({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
       });
       if (existingSaller) throw new BadRequestException('Email already exists');
+      const existingPhoneSaller = await this.sallerRepository.findOne({
+        where: { phone },
+      });
+      if (existingPhoneSaller) throw new BadRequestException('Phone already exists');
       const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt());
       const newSaller = this.sallerRepository.create({
         ...dto,
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         password: hashedPassword,
       });
       await this.sallerRepository.save(newSaller);
@@ -68,10 +72,12 @@ export class SallerService {
 
   async findByEmail(email: string): Promise<Saller> {
     try {
+      const normalizedEmail = email.toLowerCase();
+      console.log(`Searching for saller with email: ${normalizedEmail}`);
       const saller = await this.sallerRepository.findOne({
-        where: { email: email.toLowerCase() },
+        where: { email: normalizedEmail },
       });
-      if (!saller) throw new NotFoundException('Saller not found');
+      if (!saller) throw new NotFoundException(`Saller not found with email: ${email}`);
       return saller;
     } catch (error) {
       throw new InternalServerErrorException(`Error finding saller: ${error.message}`);
@@ -106,11 +112,17 @@ export class SallerService {
       if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
       const saller = await this.sallerRepository.findOne({ where: { id } });
       if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
-      if (data.email && (await this.sallerRepository.findOne({ where: { email: data.email.toLowerCase() } }))) {
-        throw new BadRequestException('Email already exists');
+      if (data.email && data.email.toLowerCase() !== saller.email) {
+        const emailExists = await this.sallerRepository.findOne({
+          where: { email: data.email.toLowerCase() },
+        });
+        if (emailExists) throw new BadRequestException('Email already exists');
       }
-      if (data.phone && (await this.sallerRepository.findOne({ where: { phone: data.phone } }))) {
-        throw new BadRequestException('Phone already exists');
+      if (data.phone && data.phone !== saller.phone) {
+        const phoneExists = await this.sallerRepository.findOne({
+          where: { phone: data.phone },
+        });
+        if (phoneExists) throw new BadRequestException('Phone already exists');
       }
       if (data.password) {
         data.password = await bcrypt.hash(data.password, await bcrypt.genSalt());

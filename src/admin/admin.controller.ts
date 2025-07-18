@@ -13,10 +13,10 @@ import {
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
-import { OTPType } from 'src/utils/otp/types/otp-type';
 import { UserDto } from 'src/user/dto/user.dto';
-import { Admin } from './entities/admin.entity';
+import { OTPType } from 'src/utils/otp/types/otp-type';
 import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
+import { Admin } from './entities/admin.entity';
 import { SelfGuard } from 'src/utils/guard/self.guard';
 import { RolesGuard } from 'src/utils/guard/roles.guard';
 import { CheckRoles } from 'src/utils/decorators/roles.decorator';
@@ -34,16 +34,16 @@ export class AdminController {
 
   @Post('request-otp')
   async requestOTP(@Body() dto: RequestTokenDto) {
-    const admin = await this.adminService.findByEmail(dto.email);
-    if (!admin) throw new NotFoundException('Admin not found');
+    const normalizedEmail = dto.email.toLowerCase();
+    const admin = await this.adminService.findByEmail(normalizedEmail);
     await this.adminService.emailVerification(admin, OTPType.OTP);
     return { message: 'OTP sent successfully. Please check email' };
   }
 
   @Post('forgot-password')
   async forgotPassword(@Body() dto: RequestTokenDto) {
-    const admin = await this.adminService.findByEmail(dto.email);
-    if (!admin) throw new NotFoundException('Admin not found');
+    const normalizedEmail = dto.email.toLowerCase();
+    const admin = await this.adminService.findByEmail(normalizedEmail);
     await this.adminService.emailVerification(admin, OTPType.RESET_LINK);
     return { message: 'Password reset link has been sent. Please check your mail' };
   }
@@ -82,14 +82,14 @@ export class AdminController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN)
+  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Post('create-user')
   async createUser(@Body() dto: UserDto) {
     return await this.adminService.createUser(dto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN)
+  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Post('create-saller')
   async createSaller(@Body() dto: UserDto) {
     return await this.adminService.createSaller(dto);
