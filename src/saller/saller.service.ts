@@ -176,7 +176,7 @@ export class SallerService {
         await queryRunner.manager.save(product);
       }
       await queryRunner.commitTransaction();
-      return {message: 'Product created successfully'};
+      return {message: 'Product created successfully', productId: product.id};
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(`Error creating product: ${error.message}`);
