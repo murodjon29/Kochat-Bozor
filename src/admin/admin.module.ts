@@ -13,13 +13,18 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserService } from 'src/user/user.service';
 import { SallerService } from 'src/saller/saller.service';
+import { FileModule } from 'src/utils/file/file.module';
+import { Product } from 'src/saller/entities/product.entiti';
+import { ProductImage } from 'src/saller/entities/image.entitiy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, User, Saller]),
+    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage]), // Product va ProductImage qo'shildi
     forwardRef(() => AdminAuthModule),
     OTPModule,
     EmailModule,
+    FileModule, 
+    ConfigModule.forRoot(), 
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

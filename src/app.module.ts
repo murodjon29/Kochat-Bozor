@@ -12,6 +12,13 @@ import { AdminAuthModule } from './admin/auth/auth.module';
 import { EmailModule } from './email/email.module';
 import { SallerModule } from './saller/saller.module';
 import { SallerAuthModule } from './saller/auth/auth.module';
+import { Saller } from './saller/entities/saller.entity';
+import { User } from './user/entities/user.entity';
+import { Admin } from './admin/entities/admin.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { ProductImage } from './saller/entities/image.entitiy';
+import { Product } from './saller/entities/product.entiti';
 
 @Module({
   imports: [
@@ -26,10 +33,14 @@ import { SallerAuthModule } from './saller/auth/auth.module';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        entities: [Saller, Product, ProductImage, User, Admin],
         synchronize: true,
       }),
       inject: [ConfigService],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'images'),
+      serveRoot: '/images',
     }),
     UserModule,
     OTPModule,

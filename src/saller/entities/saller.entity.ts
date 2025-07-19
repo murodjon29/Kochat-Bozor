@@ -1,6 +1,7 @@
 import { BaseDatabase } from 'src/utils/database/base-database.ts';
 import { Role } from 'src/utils/enum';
 import { Column, Entity, OneToMany } from 'typeorm';
+import { Product } from './product.entiti';
 
 @Entity('saller')
 export class Saller extends BaseDatabase {
@@ -22,5 +23,6 @@ export class Saller extends BaseDatabase {
   @Column({ default: Role.SALLER })
   role: Role;
 
- 
+  @OneToMany(() => Product, (product) => product.saller)
+  products: Product[];
 }

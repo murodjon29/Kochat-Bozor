@@ -9,13 +9,18 @@ import { OTPModule } from 'src/utils/otp/otp.module';
 import { EmailModule } from 'src/email/email.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
+import { FileModule } from 'src/utils/file/file.module';
+import { FileService } from 'src/utils/file/file.service';
+import { Product } from './entities/product.entiti';
+import { ProductImage } from './entities/image.entitiy';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Saller]),
+    TypeOrmModule.forFeature([Saller, Product, ProductImage]),
     forwardRef(() => SallerAuthModule),
     OTPModule,
     EmailModule,
+    FileModule,
+    ConfigModule.forRoot(),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -25,7 +30,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
   ],
-  providers: [SallerService],
+  providers: [SallerService, FileService],
   exports: [SallerService],
   controllers: [SallerController],
 })
