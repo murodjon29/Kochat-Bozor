@@ -9,6 +9,7 @@ import {
   Param,
   UseGuards,
   BadRequestException,
+  Patch,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
@@ -44,7 +45,9 @@ export class UserController {
     const normalizedEmail = dto.email.toLowerCase();
     const user = await this.userService.findByEmail(normalizedEmail);
     await this.userService.emailVerification(user, OTPType.RESET_LINK);
-    return { message: 'Password reset link has been sent. Please check your mail' };
+    return {
+      message: 'Password reset link has been sent. Please check your mail',
+    };
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -62,7 +65,7 @@ export class UserController {
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)
-  @Put(':id')
+  @Patch(':id')
   async updateProfile(@Param('id') id: number, @Body() data: Partial<User>) {
     if (isNaN(id)) throw new BadRequestException('Invalid user ID');
     return await this.userService.updateProfile(id, data);

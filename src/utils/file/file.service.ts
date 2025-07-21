@@ -24,7 +24,9 @@ export class FileService {
         });
       });
 
-      const baseUrl = this.configService.get<string>('KOCHAT_API') || 'http://34.229.90.146:3000';
+      const baseUrl =
+        this.configService.get<string>('KOCHAT_API') ||
+        'http://34.229.90.146:3000';
       const imageUrl = `${baseUrl}/images/${fileName}`;
       console.log('Generated Image URL:', imageUrl);
       return imageUrl;
@@ -40,7 +42,9 @@ export class FileService {
         console.warn('No file URL provided for deletion');
         return;
       }
-      const baseUrl = this.configService.get<string>('KOCHAT_API') || 'http://34.229.90.146:3000';
+      const baseUrl =
+        this.configService.get<string>('KOCHAT_API') ||
+        'http://34.229.90.146:3000';
       console.log('Deleting file with URL:', fileUrl);
 
       // Fayl nomini to'g'ri ajratish
@@ -75,7 +79,9 @@ export class FileService {
         console.warn('No file URL provided for existence check');
         return false;
       }
-      const baseUrl = this.configService.get<string>('KOCHAT_API') || 'http://34.229.90.146:3000';
+      const baseUrl =
+        this.configService.get<string>('KOCHAT_API') ||
+        'http://34.229.90.146:3000';
       console.log('Checking file existence for URL:', fileUrl);
 
       // Fayl nomini to'g'ri ajratish

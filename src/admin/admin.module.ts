@@ -19,12 +19,12 @@ import { ProductImage } from 'src/saller/entities/image.entitiy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage]), // Product va ProductImage qo'shildi
+    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage]),
     forwardRef(() => AdminAuthModule),
     OTPModule,
     EmailModule,
-    FileModule, 
-    ConfigModule.forRoot(), 
+    FileModule,
+    ConfigModule.forRoot(),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

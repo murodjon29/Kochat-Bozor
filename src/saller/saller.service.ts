@@ -24,7 +24,8 @@ export class SallerService {
   constructor(
     @InjectRepository(Saller) private sallerRepository: Repository<Saller>,
     @InjectRepository(Product) private productRepository: Repository<Product>,
-    @InjectRepository(ProductImage) private imageRepository: Repository<ProductImage>,
+    @InjectRepository(ProductImage)
+    private imageRepository: Repository<ProductImage>,
     private readonly dataSource: DataSource,
     private otpService: OTPService,
     private emailService: EmailService,
@@ -43,8 +44,12 @@ export class SallerService {
       const existingPhoneSaller = await this.sallerRepository.findOne({
         where: { phone },
       });
-      if (existingPhoneSaller) throw new BadRequestException('Phone already exists');
-      const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt());
+      if (existingPhoneSaller)
+        throw new BadRequestException('Phone already exists');
+      const hashedPassword = await bcrypt.hash(
+        password,
+        await bcrypt.genSalt(),
+      );
       const newSaller = this.sallerRepository.create({
         ...dto,
         email: normalizedEmail,
@@ -53,13 +58,18 @@ export class SallerService {
       await this.sallerRepository.save(newSaller);
       return this.emailVerification(newSaller, OTPType.OTP);
     } catch (error) {
-      throw new InternalServerErrorException(`Error creating saller: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error creating saller: ${error.message}`,
+      );
     }
   }
 
   async emailVerification(saller: Saller, otpType: OTPType) {
     try {
-      const token = await this.otpService.generateTokenForSaller(saller.id, otpType);
+      const token = await this.otpService.generateTokenForSaller(
+        saller.id,
+        otpType,
+      );
       if (otpType === OTPType.OTP) {
         await this.emailService.sendEmail({
           recipients: [saller.email],
@@ -75,7 +85,9 @@ export class SallerService {
         });
       }
     } catch (error) {
-      throw new InternalServerErrorException(`Error sending verification email for saller: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error sending verification email for saller: ${error.message}`,
+      );
     }
   }
 
@@ -86,10 +98,13 @@ export class SallerService {
       const saller = await this.sallerRepository.findOne({
         where: { email: normalizedEmail },
       });
-      if (!saller) throw new NotFoundException(`Saller not found with email: ${email}`);
+      if (!saller)
+        throw new NotFoundException(`Saller not found with email: ${email}`);
       return saller;
     } catch (error) {
-      throw new InternalServerErrorException(`Error finding saller: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error finding saller: ${error.message}`,
+      );
     }
   }
 
@@ -101,7 +116,9 @@ export class SallerService {
       }
       return sallers;
     } catch (error) {
-      throw new InternalServerErrorException(`Error finding sallers: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error finding sallers: ${error.message}`,
+      );
     }
   }
 
@@ -112,7 +129,9 @@ export class SallerService {
       if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
       return saller;
     } catch (error) {
-      throw new InternalServerErrorException(`Error finding saller: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error finding saller: ${error.message}`,
+      );
     }
   }
 
@@ -134,12 +153,17 @@ export class SallerService {
         if (phoneExists) throw new BadRequestException('Phone already exists');
       }
       if (data.password) {
-        data.password = await bcrypt.hash(data.password, await bcrypt.genSalt());
+        data.password = await bcrypt.hash(
+          data.password,
+          await bcrypt.genSalt(),
+        );
       }
       await this.sallerRepository.update(id, data);
       return await this.sallerRepository.findOne({ where: { id } });
     } catch (error) {
-      throw new InternalServerErrorException(`Error updating saller: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error updating saller: ${error.message}`,
+      );
     }
   }
 
@@ -151,24 +175,38 @@ export class SallerService {
       await this.sallerRepository.delete(id);
       return { message: 'Saller deleted successfully' };
     } catch (error) {
-      throw new InternalServerErrorException(`Error deleting saller: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error deleting saller: ${error.message}`,
+      );
     }
   }
 
-  async createProduct(dto: CreateProductDto, files: Express.Multer.File[]): Promise<Object> {
+  async createProduct(
+    dto: CreateProductDto,
+    files: Express.Multer.File[],
+  ): Promise<Object> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if(await this.sallerRepository.findOne({where: {id: dto.sallerId}}) === null) throw new NotFoundException('Saller not found');
-      if (dto.stock <= 0) throw new BadRequestException('Stock must be greater than 0');
+      if (
+        (await this.sallerRepository.findOne({
+          where: { id: dto.sallerId },
+        })) === null
+      )
+        throw new NotFoundException('Saller not found');
+      if (dto.stock <= 0)
+        throw new BadRequestException('Stock must be greater than 0');
       const product = queryRunner.manager.create(Product, dto);
       await queryRunner.manager.save(product);
       if (files && files.length > 0) {
         const productImages: ProductImage[] = [];
         for (const file of files) {
           const imagePath = await this.fileService.createFile(file);
-          const productImage = queryRunner.manager.create(ProductImage, { product, ImageUrl: imagePath });
+          const productImage = queryRunner.manager.create(ProductImage, {
+            product,
+            ImageUrl: imagePath,
+          });
           await queryRunner.manager.save(productImage);
           productImages.push(productImage);
         }
@@ -176,10 +214,12 @@ export class SallerService {
         await queryRunner.manager.save(product);
       }
       await queryRunner.commitTransaction();
-      return {message: 'Product created successfully', productId: product.id};
+      return { message: 'Product created successfully', productId: product.id };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(`Error creating product: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error creating product: ${error.message}`,
+      );
     } finally {
       await queryRunner.release();
     }
@@ -195,32 +235,47 @@ export class SallerService {
       if (!product) throw new NotFoundException(`Product not found: ${id}`);
       return product;
     } catch (error) {
-      throw new InternalServerErrorException(`Error fetching product: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error fetching product: ${error.message}`,
+      );
     }
   }
 
-  async getProducts(): Promise<Product[]> {
+  async getProducts() {
     try {
       const products = await this.productRepository.find({
-        relations: ['images'],
+        relations: {
+          images: true,
+        },
       });
       if (!products || products.length === 0) {
         console.log('No products found in the database');
       }
       return products;
     } catch (error) {
-      throw new InternalServerErrorException(`Error fetching products: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error fetching products: ${error.message}`,
+      );
     }
   }
 
-  async updateProduct(id: number, dto: UpdateDto, files: Express.Multer.File[]): Promise<Product> {
+  async updateProduct(
+    id: number,
+    dto: UpdateDto,
+    files: Express.Multer.File[],
+  ): Promise<Product> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       if (isNaN(id)) throw new BadRequestException('Invalid product ID');
-      if(dto.sallerId && !await this.sallerRepository.findOne({where: {id: dto.sallerId}})) throw new NotFoundException('Saller not found');
-      if (dto.stock <= 0) throw new BadRequestException('Stock must be greater than 0');
+      if (
+        dto.sallerId &&
+        !(await this.sallerRepository.findOne({ where: { id: dto.sallerId } }))
+      )
+        throw new NotFoundException('Saller not found');
+      if (dto.stock <= 0)
+        throw new BadRequestException('Stock must be greater than 0');
       const product = await this.productRepository.findOne({
         where: { id },
         relations: ['images'],
@@ -241,7 +296,10 @@ export class SallerService {
         const productImages: ProductImage[] = [];
         for (const file of files) {
           const imagePath = await this.fileService.createFile(file);
-          const productImage = queryRunner.manager.create(ProductImage, { product, ImageUrl: imagePath });
+          const productImage = queryRunner.manager.create(ProductImage, {
+            product,
+            ImageUrl: imagePath,
+          });
           await queryRunner.manager.save(productImage);
           productImages.push(productImage);
         }
@@ -256,11 +314,13 @@ export class SallerService {
       const updatedProduct = await this.productRepository.findOne({
         where: { id },
         relations: ['images'],
-      })
+      });
       return updatedProduct;
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(`Error updating product: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error updating product: ${error.message}`,
+      );
     } finally {
       await queryRunner.release();
     }
@@ -277,22 +337,20 @@ export class SallerService {
         relations: ['images'],
       });
       if (!product) throw new NotFoundException(`Product not found: ${id}`);
-
-      // Rasmlarni o'chirish
       if (product.images && product.images.length > 0) {
         for (const image of product.images) {
-          await this.fileService.deleteFile(image.ImageUrl); // Faylni serverdan o'chirish
+          await this.fileService.deleteFile(image.ImageUrl);
           await queryRunner.manager.delete(ProductImage, image.id);
         }
       }
-
-      // Mahsulotni o'chirish
       await queryRunner.manager.delete(Product, id);
       await queryRunner.commitTransaction();
       return { message: 'Product deleted successfully' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(`Error deleting product: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error deleting product: ${error.message}`,
+      );
     } finally {
       await queryRunner.release();
     }

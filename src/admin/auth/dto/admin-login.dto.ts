@@ -7,7 +7,7 @@ export class AdminLoginDto {
   @IsString()
   password: string;
 
-  @IsOptional()
-  @IsString()
-  otp?: string;
+  // @IsOptional()
+  // @IsString()
+  // otp?: string;
 }

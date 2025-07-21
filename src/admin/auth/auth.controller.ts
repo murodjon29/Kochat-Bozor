@@ -24,24 +24,24 @@ export class AdminAuthController {
     return this.authService.login(dto);
   }
 
-  @Post('reset-password')
-  async resetPassword(
-    @Body() { token, password }: { token: string; password: string },
-  ) {
-    return this.authService.resetPassword(token, password);
-  }
+  // @Post('reset-password')
+  // async resetPassword(
+  //   @Body() { token, password }: { token: string; password: string },
+  // ) {
+  //   return this.authService.resetPassword(token, password);
+  // }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  async getProfile(@Req() request) {
-    const admin = await this.adminService.findByEmail(request.user.email);
-    if (!admin) throw new NotFoundException('Admin not found');
-    return {
-      message: 'Welcome to your profile',
-      fullName: admin.fullName,
-      email: admin.email,
-      phone: admin.phone,
-      role: admin.role,
-    };
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Get('profile')
+  // async getProfile(@Req() request) {
+  //   const admin = await this.adminService.findByEmail(request.user.email);
+  //   if (!admin) throw new NotFoundException('Admin not found');
+  //   return {
+  //     message: 'Welcome to your profile',
+  //     fullName: admin.fullName,
+  //     email: admin.email,
+  //     phone: admin.phone,
+  //     role: admin.role,
+  //   };
+  // }
 }

@@ -1,5 +1,12 @@
 import { BaseDatabase } from 'src/utils/database/base-database.ts';
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { ProductImage } from './image.entitiy';
 import { Saller } from './saller.entity';
 
@@ -23,10 +30,19 @@ export class Product extends BaseDatabase {
   @Column()
   age: number;
 
-  @OneToMany(() => ProductImage, (image) => image.product, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @Column()
+  region: string;
+
+  @OneToMany(() => ProductImage, (image) => image.product, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   images: ProductImage[];
 
-  @ManyToOne(() => Saller, (saller) => saller.products, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @ManyToOne(() => Saller, (saller) => saller.products, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'sallerId' })
   saller: Saller;
 }

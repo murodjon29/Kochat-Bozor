@@ -39,6 +39,12 @@ export class SallerController {
     return { message: 'Saller created successfully and OTP sent to email' };
   }
 
+  @Public()
+  @Get('products')
+  async getProducts() {
+    return await this.sallerService.getProducts();
+  }
+
   @Post('request-otp')
   @Public()
   async requestOTP(@Body() dto: RequestTokenDto) {
@@ -54,7 +60,28 @@ export class SallerController {
     const normalizedEmail = dto.email.toLowerCase();
     const saller = await this.sallerService.findByEmail(normalizedEmail);
     await this.sallerService.emailVerification(saller, OTPType.RESET_LINK);
-    return { message: 'Password reset link has been sent. Please check your mail' };
+    return {
+      message: 'Password reset link has been sent. Please check your mail',
+    };
+  }
+
+  @UseInterceptors(FilesInterceptor('images'))
+  @UseGuards(JwtAuthGuard, SelfGuard)
+  @Post('post-product')
+  async createProduct(
+    @Body() dto: CreateProductDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0)
+      throw new BadRequestException('No files uploaded');
+    return await this.sallerService.createProduct(dto, files);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
+  @Get()
+  async getAllSallers() {
+    return await this.sallerService.findAllSallers();
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)
@@ -65,7 +92,7 @@ export class SallerController {
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)
-  @Put(':id')
+  @Patch(':id')
   async updateProfile(@Param('id') id: number, @Body() data: Partial<Saller>) {
     if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
     return await this.sallerService.updateProfile(id, data);
@@ -78,44 +105,28 @@ export class SallerController {
     return await this.sallerService.deleteAccount(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
-  @Get()
-  async getAllSallers() {
-    return await this.sallerService.findAllSallers();
-  }
-
-  @UseInterceptors(FilesInterceptor('images'))
-  @Post('post-product')
-  @UseGuards(JwtAuthGuard)
-  async createProduct(@Body() dto: CreateProductDto, @UploadedFiles() files: Express.Multer.File[]) {
-    if (!files || files.length === 0) throw new BadRequestException('No files uploaded');
-    return await this.sallerService.createProduct(dto, files);
-  }
-
-  @Get('product/:id')
   @Public()
+  @Get('product/:id')
   async getProduct(@Param('id') id: string) {
     if (isNaN(+id)) throw new BadRequestException('Invalid product ID');
     return await this.sallerService.getProduct(+id);
   }
 
-  @Get('products')
-  @Public()
-  async getProducts() {
-    return await this.sallerService.getProducts();
-  }
-
   @UseInterceptors(FilesInterceptor('images'))
   @Patch('product/:id')
   @UseGuards(JwtAuthGuard)
-  async updateProduct(@Param('id') id: string, @Body() dto: UpdateDto, @UploadedFiles() files: Express.Multer.File[]) {
+  async updateProduct(
+    @Param('id') id: string,
+    @Body() dto: UpdateDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
     if (isNaN(+id)) throw new BadRequestException('Invalid product ID');
     return await this.sallerService.updateProduct(+id, dto, files);
   }
 
+  @UseGuards(JwtAuthGuard, SelfGuard, RolesGuard)
+  @CheckRoles(Role.ADMIN)
   @Delete('product/:id')
-  @UseGuards(JwtAuthGuard)
   async deleteProduct(@Param('id') id: string) {
     if (isNaN(+id)) throw new BadRequestException('Invalid product ID');
     return await this.sallerService.deleteProduct(+id);

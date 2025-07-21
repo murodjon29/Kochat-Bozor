@@ -27,11 +27,18 @@ export class OTPService {
     return this.generateToken(adminId, Role.ADMIN, type);
   }
 
-  async generateTokenForSaller(sallerId: number, type: OTPType): Promise<string> {
+  async generateTokenForSaller(
+    sallerId: number,
+    type: OTPType,
+  ): Promise<string> {
     return this.generateToken(sallerId, Role.SALLER, type);
   }
 
-  private async generateToken(id: number, role: Role, type: OTPType): Promise<string> {
+  private async generateToken(
+    id: number,
+    role: Role,
+    type: OTPType,
+  ): Promise<string> {
     try {
       if (type === OTPType.OTP) {
         const otp = crypto.randomInt(100000, 999999).toString();
@@ -60,15 +67,25 @@ export class OTPService {
     return this.validateOTP(userId, Role.USER, enteredOtp);
   }
 
-  async validateAdminOTP(adminId: number, enteredOtp: string): Promise<boolean> {
+  async validateAdminOTP(
+    adminId: number,
+    enteredOtp: string,
+  ): Promise<boolean> {
     return this.validateOTP(adminId, Role.ADMIN, enteredOtp);
   }
 
-  async validateSallerOTP(sallerId: number, enteredOtp: string): Promise<boolean> {
+  async validateSallerOTP(
+    sallerId: number,
+    enteredOtp: string,
+  ): Promise<boolean> {
     return this.validateOTP(sallerId, Role.SALLER, enteredOtp);
   }
 
-  private async validateOTP(id: number, role: Role, enteredOtp: string): Promise<boolean> {
+  private async validateOTP(
+    id: number,
+    role: Role,
+    enteredOtp: string,
+  ): Promise<boolean> {
     try {
       const currentTime = Date.now();
       const otpEntry = this.otpArray.find(
@@ -80,7 +97,9 @@ export class OTPService {
       );
 
       if (!otpEntry) {
-        console.log(`OTP validation failed for ${role}-id-${id}: OTP expired or not found`);
+        console.log(
+          `OTP validation failed for ${role}-id-${id}: OTP expired or not found`,
+        );
         throw new BadRequestException('OTP muddati tugagan yoki topilmadi');
       }
 
@@ -95,7 +114,9 @@ export class OTPService {
     }
   }
 
-  async validateResetPassword(token: string): Promise<{ id: number; role: Role }> {
+  async validateResetPassword(
+    token: string,
+  ): Promise<{ id: number; role: Role }> {
     try {
       const decoded = this.jwtService.verify(token, {
         secret: this.configService.get<string>('JWT_RESET_SECRET'),
@@ -105,7 +126,9 @@ export class OTPService {
     } catch (error) {
       console.log(`Reset token validation failed: ${error.message}`);
       if (error.name === 'TokenExpiredError') {
-        throw new BadRequestException('Parolni tiklash tokeni muddati tugagan. Yangisini sorang');
+        throw new BadRequestException(
+          'Parolni tiklash tokeni muddati tugagan. Yangisini sorang',
+        );
       }
       throw new BadRequestException('Notogri parolni tiklash tokeni');
     }

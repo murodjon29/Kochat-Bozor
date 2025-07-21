@@ -33,8 +33,14 @@ export class SallerAuthService {
     });
     if (!saller) throw new UnauthorizedException('Email mavjud emas');
     const passwordMatch = await bcrypt.compare(password, saller.password);
-    if (!passwordMatch) throw new UnauthorizedException('Noto‘g‘ri ma’lumotlar');
-    return { id: saller.id, email: saller.email, role: saller.role || Role.SALLER, accountStatus: saller.accountStatus };
+    if (!passwordMatch)
+      throw new UnauthorizedException('Noto‘g‘ri ma’lumotlar');
+    return {
+      id: saller.id,
+      email: saller.email,
+      role: saller.role || Role.SALLER,
+      accountStatus: saller.accountStatus,
+    };
   }
 
   async login(dto: SallerLoginDto) {
@@ -50,8 +56,12 @@ export class SallerAuthService {
       await this.verifyToken(saller.id, otp);
     }
 
-    const payload = { id: saller.id, email: saller.email, role: saller.role || Role.SALLER };
-    console.log('Saller JWT payload:', payload); // Debug uchun
+    const payload = {
+      id: saller.id,
+      email: saller.email,
+      role: saller.role || Role.SALLER,
+    };
+    console.log('Saller JWT payload:', payload);
     return {
       access_token: this.jwtService.sign(payload, {
         secret: this.configService.get<string>('JWT_SECRET'),
@@ -66,7 +76,9 @@ export class SallerAuthService {
   async verifyToken(sallerId: number, token: string) {
     try {
       await this.otpService.validateSallerOTP(sallerId, token);
-      const saller = await this.sallerRepository.findOne({ where: { id: sallerId } });
+      const saller = await this.sallerRepository.findOne({
+        where: { id: sallerId },
+      });
       if (!saller) throw new UnauthorizedException('Sotuvchi topilmadi');
       saller.accountStatus = 'verified';
       await this.sallerRepository.save(saller);
@@ -78,8 +90,11 @@ export class SallerAuthService {
 
   async resetPassword(token: string, newPassword: string): Promise<string> {
     try {
-      const { id: sallerId } = await this.otpService.validateResetPassword(token);
-      const saller = await this.sallerRepository.findOne({ where: { id: sallerId } });
+      const { id: sallerId } =
+        await this.otpService.validateResetPassword(token);
+      const saller = await this.sallerRepository.findOne({
+        where: { id: sallerId },
+      });
       if (!saller) throw new BadRequestException('Sotuvchi topilmadi');
       saller.password = await bcrypt.hash(newPassword, 10);
       await this.sallerRepository.save(saller);

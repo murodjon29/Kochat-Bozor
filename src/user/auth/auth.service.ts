@@ -34,7 +34,12 @@ export class UserAuthService {
     if (!user) throw new UnauthorizedException('Email mavjud emas');
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) throw new UnauthorizedException('Notogri malumotlar');
-    return { id: user.id, email: user.email, role: user.role || Role.USER, accountStatus: user.accountStatus };
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role || Role.USER,
+      accountStatus: user.accountStatus,
+    };
   }
 
   async login(dto: UserLoginDto) {
@@ -50,7 +55,11 @@ export class UserAuthService {
       await this.verifyToken(user.id, otp);
     }
 
-    const payload = { id: user.id, email: user.email, role: user.role || Role.USER };
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role || Role.USER,
+    };
     console.log('User JWT payload:', payload); // Debug uchun
     return {
       access_token: this.jwtService.sign(payload, {

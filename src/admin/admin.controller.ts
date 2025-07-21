@@ -10,6 +10,7 @@ import {
   UseGuards,
   Request,
   BadRequestException,
+  Patch,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
@@ -26,61 +27,29 @@ import { Role } from 'src/utils/enum';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @Post('register')
-  async register(@Body() adminDto: UserDto) {
-    await this.adminService.register(adminDto);
-    return { message: 'Admin created successfully and OTP sent to email' };
-  }
+  // @Post('register')
+  // async register(@Body() adminDto: UserDto) {
+  //   await this.adminService.register(adminDto);
+  //   return { message: 'Admin created successfully and OTP sent to email' };
+  // }
 
-  @Post('request-otp')
-  async requestOTP(@Body() dto: RequestTokenDto) {
-    const normalizedEmail = dto.email.toLowerCase();
-    const admin = await this.adminService.findByEmail(normalizedEmail);
-    await this.adminService.emailVerification(admin, OTPType.OTP);
-    return { message: 'OTP sent successfully. Please check email' };
-  }
+  // @Post('request-otp')
+  // async requestOTP(@Body() dto: RequestTokenDto) {
+  //   const normalizedEmail = dto.email.toLowerCase();
+  //   const admin = await this.adminService.findByEmail(normalizedEmail);
+  //   await this.adminService.emailVerification(admin, OTPType.OTP);
+  //   return { message: 'OTP sent successfully. Please check email' };
+  // }
 
-  @Post('forgot-password')
-  async forgotPassword(@Body() dto: RequestTokenDto) {
-    const normalizedEmail = dto.email.toLowerCase();
-    const admin = await this.adminService.findByEmail(normalizedEmail);
-    await this.adminService.emailVerification(admin, OTPType.RESET_LINK);
-    return { message: 'Password reset link has been sent. Please check your mail' };
-  }
-
-  @UseGuards(JwtAuthGuard, SelfGuard)
-  @Get(':id')
-  async getAdmin(@Param('id') id: string) {
-    const adminId = parseInt(id, 10);
-    if (isNaN(adminId)) throw new BadRequestException('Invalid admin ID');
-    return await this.adminService.findById(adminId);
-  }
+  // @Post('forgot-password')
+  // async forgotPassword(@Body() dto: RequestTokenDto) {
+  //   const normalizedEmail = dto.email.toLowerCase();
+  //   const admin = await this.adminService.findByEmail(normalizedEmail);
+  //   await this.adminService.emailVerification(admin, OTPType.RESET_LINK);
+  //   return { message: 'Password reset link has been sent. Please check your mail' };
+  // }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.SUPERADMIN)
-  @Get('get-admins')
-  async getAdmins(@Request() req) {
-    const adminId = req.user?.id;
-    if (!adminId || isNaN(Number(adminId))) throw new BadRequestException('Admin not authenticated or invalid ID');
-    return await this.adminService.getAdmins();
-  }
-
-  @UseGuards(JwtAuthGuard, SelfGuard)
-  @Put(':id')
-  async updateAdmin(@Param('id') id: string, @Body() data: Partial<Admin>) {
-    const adminId = parseInt(id, 10);
-    if (isNaN(adminId)) throw new BadRequestException('Invalid admin ID');
-    return await this.adminService.updateProfile(adminId, data);
-  }
-
-  @UseGuards(JwtAuthGuard, SelfGuard)
-  @Delete(':id')
-  async deleteAdmin(@Param('id') id: string) {
-    const adminId = parseInt(id, 10);
-    if (isNaN(adminId)) throw new BadRequestException('Invalid admin ID');
-    return await this.adminService.deleteAccount(adminId);
-  }
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Post('create-user')
@@ -93,5 +62,54 @@ export class AdminController {
   @Post('create-saller')
   async createSaller(@Body() dto: UserDto) {
     return await this.adminService.createSaller(dto);
+  }
+
+  @Get('get-all-users')
+  getAllUsers() {
+    return this.adminService.getAllUser();
+  }
+
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @CheckRoles(Role.SUPERADMIN)
+  // @Get('get-admins')
+  // async getAdmins(@Request() req) {
+  //   const adminId = req.user?.id;
+  //   if (!adminId || isNaN(Number(adminId))) throw new BadRequestException('Admin not authenticated or invalid ID');
+  //   return await this.adminService.getAdmins();
+  // }
+
+  @Get('get-all-sellers')
+  async getAllSellers() {
+    return await this.adminService.getAllSaller();
+  }
+
+  // @UseGuards(JwtAuthGuard, SelfGuard)
+  // @Get(':id')
+  // async getAdmin(@Param('id') id: string) {
+  //   const adminId = parseInt(id, 10);
+  //   if (isNaN(adminId)) throw new BadRequestException('Invalid admin ID');
+  //   return await this.adminService.findById(adminId);
+  // }
+
+  // @UseGuards(JwtAuthGuard, SelfGuard)
+  // @Patch(':id')
+  // async updateAdmin(@Param('id') id: string, @Body() data: Partial<Admin>) {
+  //   const adminId = parseInt(id, 10);
+  //   if (isNaN(adminId)) throw new BadRequestException('Invalid admin ID');
+  //   return await this.adminService.updateProfile(adminId, data);
+  // }
+
+  // @UseGuards(JwtAuthGuard, SelfGuard)
+  // @Delete(':id')
+  // async deleteAdmin(@Param('id') id: string) {
+  //   const adminId = parseInt(id, 10);
+  //   if (isNaN(adminId)) throw new BadRequestException('Invalid admin ID');
+  //   return await this.adminService.deleteAccount(adminId);
+  // }
+
+  @Delete('delete-product/:id')
+  async deleteProduct(@Param('id') id: string) {
+    if (isNaN(+id)) throw new BadRequestException('Invalid saller ID');
+    return await this.adminService.deleteProduct(+id);
   }
 }

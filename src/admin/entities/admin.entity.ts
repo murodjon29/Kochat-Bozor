@@ -4,11 +4,11 @@ import { Column, Entity } from 'typeorm';
 
 @Entity('admin')
 export class Admin extends BaseDatabase {
-  @Column()
-  fullName: string;
+  // @Column()
+  // fullName: string;
 
-  @Column()
-  phone: string;
+  // @Column()
+  // phone: string;
 
   @Column({ unique: true })
   email: string;
@@ -16,9 +16,9 @@ export class Admin extends BaseDatabase {
   @Column()
   password: string;
 
-  @Column({ default: 'unverified' })
-  accountStatus: 'verified' | 'unverified';
+  // @Column({ default: 'unverified' })
+  // accountStatus: 'verified' | 'unverified';
 
-  @Column({default: Role.ADMIN})
-  role: Role
+  @Column({ default: Role.ADMIN })
+  role: Role;
 }
