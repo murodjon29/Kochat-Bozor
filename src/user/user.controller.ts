@@ -10,6 +10,7 @@ import {
   UseGuards,
   BadRequestException,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
@@ -55,6 +56,11 @@ export class UserController {
   @Get()
   async getAllUsers() {
     return await this.userService.findAllUser();
+  }
+
+  @Get('get-all-product')
+  async getAllProduct(@Query() query: any) {
+    return await this.userService.getAllProduct(query);
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)

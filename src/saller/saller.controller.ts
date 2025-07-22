@@ -15,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { SallerService } from './saller.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
-import { UserDto } from 'src/user/dto/user.dto';
 import { OTPType } from 'src/utils/otp/types/otp-type';
 import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
 import { Saller } from './entities/saller.entity';
@@ -27,6 +26,8 @@ import { CreateProductDto } from './dto/product.dto';
 import { UpdateDto } from './dto/updet.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/utils/decorators/public.decorator';
+import { CreateSallerDto } from './dto/create.saller.dto';
+import { UpdateSallerDto } from './dto/update-saller.dto';
 
 @Controller('saller')
 export class SallerController {
@@ -34,7 +35,7 @@ export class SallerController {
 
   @Post('register')
   @Public()
-  async register(@Body() sallerDto: UserDto) {
+  async register(@Body() sallerDto: CreateSallerDto) {
     await this.sallerService.register(sallerDto);
     return { message: 'Saller created successfully and OTP sent to email' };
   }
@@ -93,7 +94,7 @@ export class SallerController {
 
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Patch(':id')
-  async updateProfile(@Param('id') id: number, @Body() data: Partial<Saller>) {
+  async updateProfile(@Param('id') id: number, @Body() data: UpdateSallerDto) {
     if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
     return await this.sallerService.updateProfile(id, data);
   }

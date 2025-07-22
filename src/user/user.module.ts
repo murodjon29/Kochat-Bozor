@@ -9,10 +9,12 @@ import { OTPModule } from 'src/utils/otp/otp.module';
 import { EmailModule } from 'src/email/email.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SallerModule } from 'src/saller/saller.module';
+import { Product } from 'src/saller/entities/product.entiti';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Product]),
     forwardRef(() => UserAuthModule),
     OTPModule,
     EmailModule,

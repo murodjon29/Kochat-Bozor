@@ -17,6 +17,15 @@ export class Saller extends BaseDatabase {
   @Column()
   password: string;
 
+  @Column()
+  businessName: string; // bussinessName -> businessName
+
+  @Column()
+  address: string;
+
+  @Column()
+  experience: string;
+
   @Column({ default: 'unverified' })
   accountStatus: 'verified' | 'unverified';
 

@@ -18,6 +18,7 @@ import { FileService } from 'src/utils/file/file.service';
 import { Product } from './entities/product.entiti';
 import { ProductImage } from './entities/image.entitiy';
 import { UpdateDto } from './dto/updet.dto';
+import { UpdateSallerDto } from './dto/update-saller.dto';
 
 @Injectable()
 export class SallerService {
@@ -135,12 +136,12 @@ export class SallerService {
     }
   }
 
-  async updateProfile(id: number, data: Partial<Saller>): Promise<Saller> {
+  async updateProfile(id: number, data: UpdateSallerDto): Promise<Saller> {
     try {
       if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
       const saller = await this.sallerRepository.findOne({ where: { id } });
       if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
-      if (data.email && data.email.toLowerCase() !== saller.email) {
+      if (typeof data.email === 'string' && data.email.toLowerCase() !== saller.email) {
         const emailExists = await this.sallerRepository.findOne({
           where: { email: data.email.toLowerCase() },
         });

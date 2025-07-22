@@ -71,14 +71,14 @@ export class AdminController {
 
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @CheckRoles(Role.SUPERADMIN)
-  // @Get('get-admins')
-  // async getAdmins(@Request() req) {
-  //   const adminId = req.user?.id;
-  //   if (!adminId || isNaN(Number(adminId))) throw new BadRequestException('Admin not authenticated or invalid ID');
-  //   return await this.adminService.getAdmins();
-  // }
+  @Get('get-admins')
+  async getAdmins(@Request() req) {
+    const adminId = req.user?.id;
+    if (!adminId || isNaN(Number(adminId))) throw new BadRequestException('Admin not authenticated or invalid ID');
+    return await this.adminService.getAdmins();
+  }
 
-  @Get('get-all-sellers')
+  @Get('get-all-sallers')
   async getAllSellers() {
     return await this.adminService.getAllSaller();
   }
@@ -111,5 +111,17 @@ export class AdminController {
   async deleteProduct(@Param('id') id: string) {
     if (isNaN(+id)) throw new BadRequestException('Invalid saller ID');
     return await this.adminService.deleteProduct(+id);
+  }
+
+  @Delete('delete-saller/:id')
+  async deleteSaller(@Param('id') id: string) {
+    if (isNaN(+id)) throw new BadRequestException('Invalid saller ID');
+    return await this.adminService.deleteSaller(+id);
+  }
+
+  @Delete('delete-user/:id')
+  async deleteUser(@Param('id') id: string) {
+    if (isNaN(+id)) throw new BadRequestException('Invalid saller ID');
+    return await this.adminService.deleteUser(+id);
   }
 }

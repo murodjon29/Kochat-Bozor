@@ -19,6 +19,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ProductImage } from './saller/entities/image.entitiy';
 import { Product } from './saller/entities/product.entiti';
+import { CategoryModule } from './category/category.module';
+import { Category } from './category/entities/category.entity';
 
 @Module({
   imports: [
@@ -33,7 +35,7 @@ import { Product } from './saller/entities/product.entiti';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Saller, Product, ProductImage, User, Admin],
+        entities: [Saller, Product, ProductImage, User, Admin, Category],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -42,6 +44,7 @@ import { Product } from './saller/entities/product.entiti';
       rootPath: join(process.cwd(), 'images'),
       serveRoot: '/images',
     }),
+    CategoryModule,
     UserModule,
     OTPModule,
     UserAuthModule,
@@ -50,6 +53,7 @@ import { Product } from './saller/entities/product.entiti';
     SallerModule,
     SallerAuthModule,
     EmailModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -13,11 +13,13 @@ import { ConfigService } from '@nestjs/config';
 import { OTPService } from 'src/utils/otp/otp.service';
 import { EmailService } from 'src/email/email.service';
 import { OTPType } from 'src/utils/otp/types/otp-type';
+import { Product } from 'src/saller/entities/product.entiti';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Product) private readonly productRepository: Repository<Product>, 
     private otpService: OTPService,
     private emailService: EmailService,
     private configService: ConfigService,
@@ -169,6 +171,20 @@ export class UserService {
       throw new InternalServerErrorException(
         `Error deleting user: ${error.message}`,
       );
+    }
+  }
+
+  async getAllProduct(query: any) {
+    try {
+     const product = await this.productRepository.createQueryBuilder('product')
+        .leftJoinAndSelect('product.images', 'images')
+        .leftJoinAndSelect('product.saller', 'saller')
+        .leftJoinAndSelect('product.category', 'category')
+
+      
+    } catch (error) {
+      console.error('Error finding products:', error.message);
+      throw new InternalServerErrorException(`Error finding product: ${error.message}`);
     }
   }
 }
