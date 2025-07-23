@@ -21,6 +21,8 @@ import { ProductImage } from './saller/entities/image.entitiy';
 import { Product } from './saller/entities/product.entiti';
 import { CategoryModule } from './category/category.module';
 import { Category } from './category/entities/category.entity';
+import { OrderModule } from './order/order.module';
+import { Order } from './order/entities/order.entity';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { Category } from './category/entities/category.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Saller, Product, ProductImage, User, Admin, Category],
+        entities: [Saller, Product, ProductImage, User, Admin, Category, Order],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -54,6 +56,7 @@ import { Category } from './category/entities/category.entity';
     SallerAuthModule,
     EmailModule,
     CategoryModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],

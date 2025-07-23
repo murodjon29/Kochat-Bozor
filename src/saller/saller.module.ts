@@ -13,9 +13,11 @@ import { FileModule } from 'src/utils/file/file.module';
 import { FileService } from 'src/utils/file/file.service';
 import { Product } from './entities/product.entiti';
 import { ProductImage } from './entities/image.entitiy';
+import { Category } from 'src/category/entities/category.entity';
+import { CategoryModule } from 'src/category/category.module';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Saller, Product, ProductImage]),
+    TypeOrmModule.forFeature([Saller, Product, ProductImage, Category]),
     forwardRef(() => SallerAuthModule),
     OTPModule,
     EmailModule,

@@ -16,12 +16,14 @@ import { SallerService } from 'src/saller/saller.service';
 import { FileModule } from 'src/utils/file/file.module';
 import { Product } from 'src/saller/entities/product.entiti';
 import { ProductImage } from 'src/saller/entities/image.entitiy';
+import { CategoryModule } from 'src/category/category.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage]),
+    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage,]),
     forwardRef(() => AdminAuthModule),
     OTPModule,
+    CategoryModule,
     EmailModule,
     FileModule,
     ConfigModule.forRoot(),

@@ -18,7 +18,7 @@ export class Saller extends BaseDatabase {
   password: string;
 
   @Column()
-  businessName: string; // bussinessName -> businessName
+  businessName: string; 
 
   @Column()
   address: string;

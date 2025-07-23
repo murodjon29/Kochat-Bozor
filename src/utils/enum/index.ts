@@ -4,3 +4,10 @@ export enum Role {
   SUPERADMIN = 'superadmin',
   SALLER = 'saller',
 }
+
+
+export enum ProductStatus {
+  PANDING='panding',
+  COMPLETED='completed',
+  CANCELLED='cancelled'
+}

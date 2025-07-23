@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { ProductImage } from './image.entitiy';
 import { Saller } from './saller.entity';
+import { Category } from 'src/category/entities/category.entity';
 
 @Entity('product')
 export class Product extends BaseDatabase {
@@ -45,4 +46,11 @@ export class Product extends BaseDatabase {
   })
   @JoinColumn({ name: 'sallerId' })
   saller: Saller;
+
+  @ManyToOne(() => Category, (category) => category.products, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
 }

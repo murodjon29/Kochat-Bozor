@@ -74,7 +74,8 @@ export class AdminController {
   @Get('get-admins')
   async getAdmins(@Request() req) {
     const adminId = req.user?.id;
-    if (!adminId || isNaN(Number(adminId))) throw new BadRequestException('Admin not authenticated or invalid ID');
+    if (!adminId || isNaN(Number(adminId)))
+      throw new BadRequestException('Admin not authenticated or invalid ID');
     return await this.adminService.getAdmins();
   }
 

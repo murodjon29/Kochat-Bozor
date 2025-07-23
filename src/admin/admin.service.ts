@@ -53,7 +53,9 @@ export class AdminService implements OnModuleInit {
       }
     } catch (error) {
       console.error('Error creating admin:', error.message);
-      throw new InternalServerErrorException(`Error initializing admin: ${error.message}`);
+      throw new InternalServerErrorException(
+        `Error initializing admin: ${error.message}`,
+      );
     }
   }
 
@@ -191,29 +193,29 @@ export class AdminService implements OnModuleInit {
     }
   }
 
-  async deleteSaller(id: number){
+  async deleteSaller(id: number) {
     try {
       const saller = await this.sallerService.findById(id);
-      if(!saller) throw new NotFoundException(`Saller not found: ${id}`);
+      if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
       await this.sallerService.deleteAccount(id);
       return { message: 'Saller deleted successfully' };
     } catch (error) {
       throw new InternalServerErrorException(
         `Error deleting saller: ${error.message}`,
-      )
+      );
     }
   }
 
-  async deleteUser(id: number){
+  async deleteUser(id: number) {
     try {
       const user = await this.userService.findById(id);
-      if(!user) throw new NotFoundException(`User not found: ${id}`);
+      if (!user) throw new NotFoundException(`User not found: ${id}`);
       await this.userService.deleteAccount(id);
       return { message: 'User deleted successfully' };
     } catch (error) {
       throw new InternalServerErrorException(
         `Error deleting user: ${error.message}`,
-      )
+      );
     }
   }
 }

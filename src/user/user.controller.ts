@@ -11,6 +11,7 @@ import {
   BadRequestException,
   Patch,
   Query,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserDto } from './dto/user.dto';
@@ -30,7 +31,7 @@ export class UserController {
   @Post('register')
   async register(@Body() userDto: UserDto) {
     await this.userService.register(userDto);
-    return { message: 'User created successfully and OTP sent to email' };
+    return { message: 'Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi va OTP emailga yuborildi' };
   }
 
   @Post('request-otp')
@@ -38,7 +39,7 @@ export class UserController {
     const normalizedEmail = dto.email.toLowerCase();
     const user = await this.userService.findByEmail(normalizedEmail);
     await this.userService.emailVerification(user, OTPType.OTP);
-    return { message: 'OTP sent successfully. Please check email' };
+    return { message: 'OTP muvaffaqiyatli yuborildi. Emailingizni tekshiring' };
   }
 
   @Post('forgot-password')
@@ -47,8 +48,13 @@ export class UserController {
     const user = await this.userService.findByEmail(normalizedEmail);
     await this.userService.emailVerification(user, OTPType.RESET_LINK);
     return {
-      message: 'Password reset link has been sent. Please check your mail',
+      message: 'Parolni tiklash havolasi yuborildi. Emailingizni tekshiring',
     };
+  }
+
+  @Get('filter')
+  async getAllProduct(@Query() query: any) {
+    return await this.userService.getFilter(query);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -58,29 +64,24 @@ export class UserController {
     return await this.userService.findAllUser();
   }
 
-  @Get('get-all-product')
-  async getAllProduct(@Query() query: any) {
-    return await this.userService.getAllProduct(query);
-  }
-
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Get(':id')
   async getProfile(@Param('id') id: number) {
-    if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
     return await this.userService.findById(id);
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Patch(':id')
   async updateProfile(@Param('id') id: number, @Body() data: Partial<User>) {
-    if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
     return await this.userService.updateProfile(id, data);
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Delete(':id')
   async deleteAccount(@Param('id') id: number) {
-    if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
     return await this.userService.deleteAccount(id);
   }
 }

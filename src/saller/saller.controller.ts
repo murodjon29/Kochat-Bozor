@@ -43,7 +43,7 @@ export class SallerController {
   @Public()
   @Get('products')
   async getProducts() {
-    return await this.sallerService.getProducts();
+    return await this.sallerService.getAllProducts();
   }
 
   @Post('request-otp')
@@ -67,7 +67,7 @@ export class SallerController {
   }
 
   @UseInterceptors(FilesInterceptor('images'))
-  @UseGuards(JwtAuthGuard, SelfGuard)
+  // @UseGuards(JwtAuthGuard, SelfGuard)
   @Post('post-product')
   async createProduct(
     @Body() dto: CreateProductDto,
