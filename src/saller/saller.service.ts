@@ -19,6 +19,7 @@ import { Product } from './entities/product.entiti';
 import { ProductImage } from './entities/image.entitiy';
 import { UpdateDto } from './dto/updet.dto';
 import { UpdateSallerDto } from './dto/update-saller.dto';
+import { Category } from 'src/category/entities/category.entity';
 
 @Injectable()
 export class SallerService {
@@ -27,6 +28,8 @@ export class SallerService {
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(ProductImage)
     private imageRepository: Repository<ProductImage>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
     private readonly dataSource: DataSource,
     private otpService: OTPService,
     private emailService: EmailService,
@@ -34,6 +37,74 @@ export class SallerService {
     private readonly fileService: FileService,
   ) {}
 
+  async createProduct(
+    dto: CreateProductDto,
+    files: Express.Multer.File[],
+  ): Promise<Object> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      // Kategoriyani topish
+      const category = await queryRunner.manager.findOne(Category, {
+        where: { id: dto.categoryId },
+      });
+      if (!category) {
+        throw new BadRequestException(`Kategoriya topilmadi: ID ${dto.categoryId}`);
+      }
+
+      // Sotuvchini topish
+      const saller = await queryRunner.manager.findOne(Saller, {
+        where: { id: dto.sallerId },
+      });
+      if (!saller) {
+        throw new NotFoundException(`Sotuvchi topilmadi: ID ${dto.sallerId}`);
+      }
+
+      // Zaxira miqdorini tekshirish
+      if (dto.stock <= 0) {
+        throw new BadRequestException('Zaxira miqdori 0 dan katta bo‘lishi kerak');
+      }
+
+      // Mahsulotni yaratish
+      const product = queryRunner.manager.create(Product, {
+        ...dto,
+        saller, // Sotuvchi entitysini bog‘lash
+        category, // Kategoriya entitysini bog‘lash
+      });
+
+      // Mahsulotni saqlash
+      await queryRunner.manager.save(Product, product);
+
+      // Rasmlarni saqlash
+      if (files && files.length > 0) {
+        const productImages: ProductImage[] = [];
+        for (const file of files) {
+          const imagePath = await this.fileService.createFile(file);
+          const productImage = queryRunner.manager.create(ProductImage, {
+            product,
+            ImageUrl: imagePath,
+          });
+          await queryRunner.manager.save(ProductImage, productImage);
+          productImages.push(productImage);
+        }
+        product.images = productImages;
+        await queryRunner.manager.save(Product, product);
+      }
+
+      await queryRunner.commitTransaction();
+      return { message: 'Mahsulot muvaffaqiyatli yaratildi', productId: product.id };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        `Mahsulot yaratishda xato: ${error.message}`,
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  // Quyida qolgan metodlar o‘zgarishsiz qoladi
   async register(dto: UserDto): Promise<void> {
     try {
       const { email, password, phone } = dto;
@@ -41,12 +112,12 @@ export class SallerService {
       const existingSaller = await this.sallerRepository.findOne({
         where: { email: normalizedEmail },
       });
-      if (existingSaller) throw new BadRequestException('Email already exists');
+      if (existingSaller) throw new BadRequestException('Email allaqachon mavjud');
       const existingPhoneSaller = await this.sallerRepository.findOne({
         where: { phone },
       });
       if (existingPhoneSaller)
-        throw new BadRequestException('Phone already exists');
+        throw new BadRequestException('Telefon raqami allaqachon mavjud');
       const hashedPassword = await bcrypt.hash(
         password,
         await bcrypt.genSalt(),
@@ -60,7 +131,7 @@ export class SallerService {
       return this.emailVerification(newSaller, OTPType.OTP);
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error creating saller: ${error.message}`,
+        `Sotuvchi yaratishda xato: ${error.message}`,
       );
     }
   }
@@ -74,20 +145,20 @@ export class SallerService {
       if (otpType === OTPType.OTP) {
         await this.emailService.sendEmail({
           recipients: [saller.email],
-          subject: 'OTP for verification',
-          html: `Your OTP code is: <strong>${token}</strong>. Provide this OTP to verify your account`,
+          subject: 'Tasdiqlash uchun OTP',
+          html: `Sizning OTP kodingiz: <strong>${token}</strong>. Hisobingizni tasdiqlash uchun ushbu OTP dan foydalaning`,
         });
       } else if (otpType === OTPType.RESET_LINK) {
         const resetLink = `${this.configService.get('RESET_PASSWORD_URL')}?token=${token}`;
         await this.emailService.sendEmail({
           recipients: [saller.email],
-          subject: 'Password Reset Link',
-          html: `Click the given link to reset your password: <p><a href="${resetLink}">Reset Password</a></p>`,
+          subject: 'Parolni tiklash havolasi',
+          html: `Parolingizni tiklash uchun quyidagi havolaga bosing: <p><a href="${resetLink}">Parolni tiklash</a></p>`,
         });
       }
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error sending verification email for saller: ${error.message}`,
+        `Sotuvchiga tasdiqlash emaili yuborishda xato: ${error.message}`,
       );
     }
   }
@@ -95,16 +166,16 @@ export class SallerService {
   async findByEmail(email: string): Promise<Saller> {
     try {
       const normalizedEmail = email.toLowerCase();
-      console.log(`Searching for saller with email: ${normalizedEmail}`);
+      console.log(`Sotuvchi qidirilmoqda, email: ${normalizedEmail}`);
       const saller = await this.sallerRepository.findOne({
         where: { email: normalizedEmail },
       });
       if (!saller)
-        throw new NotFoundException(`Saller not found with email: ${email}`);
+        throw new NotFoundException(`Sotuvchi topilmadi: ${email}`);
       return saller;
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error finding saller: ${error.message}`,
+        `Sotuvchi qidirishda xato: ${error.message}`,
       );
     }
   }
@@ -113,45 +184,48 @@ export class SallerService {
     try {
       const sallers = await this.sallerRepository.find();
       if (!sallers || sallers.length === 0) {
-        console.log('No sallers found in the database');
+        console.log('Ma\'lumotlar bazasida sotuvchilar topilmadi');
       }
       return sallers;
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error finding sallers: ${error.message}`,
+        `Sotuvchilarni qidirishda xato: ${error.message}`,
       );
     }
   }
 
   async findById(id: number): Promise<Saller> {
     try {
-      if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
+      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri sotuvchi ID');
       const saller = await this.sallerRepository.findOne({ where: { id } });
-      if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
+      if (!saller) throw new NotFoundException(`Sotuvchi topilmadi: ${id}`);
       return saller;
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error finding saller: ${error.message}`,
+        `Sotuvchi qidirishda xato: ${error.message}`,
       );
     }
   }
 
   async updateProfile(id: number, data: UpdateSallerDto): Promise<Saller> {
     try {
-      if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
+      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri sotuvchi ID');
       const saller = await this.sallerRepository.findOne({ where: { id } });
-      if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
-      if (typeof data.email === 'string' && data.email.toLowerCase() !== saller.email) {
+      if (!saller) throw new NotFoundException(`Sotuvchi topilmadi: ${id}`);
+      if (
+        typeof data.email === 'string' &&
+        data.email.toLowerCase() !== saller.email
+      ) {
         const emailExists = await this.sallerRepository.findOne({
           where: { email: data.email.toLowerCase() },
         });
-        if (emailExists) throw new BadRequestException('Email already exists');
+        if (emailExists) throw new BadRequestException('Email allaqachon mavjud');
       }
       if (data.phone && data.phone !== saller.phone) {
         const phoneExists = await this.sallerRepository.findOne({
           where: { phone: data.phone },
         });
-        if (phoneExists) throw new BadRequestException('Phone already exists');
+        if (phoneExists) throw new BadRequestException('Telefon raqami allaqachon mavjud');
       }
       if (data.password) {
         data.password = await bcrypt.hash(
@@ -163,99 +237,57 @@ export class SallerService {
       return await this.sallerRepository.findOne({ where: { id } });
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error updating saller: ${error.message}`,
+        `Sotuvchi profilini yangilashda xato: ${error.message}`,
       );
     }
   }
 
   async deleteAccount(id: number): Promise<{ message: string }> {
     try {
-      if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
+      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri sotuvchi ID');
       const saller = await this.sallerRepository.findOne({ where: { id } });
-      if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
+      if (!saller) throw new NotFoundException(`Sotuvchi topilmadi: ${id}`);
       await this.sallerRepository.delete(id);
-      return { message: 'Saller deleted successfully' };
+      return { message: 'Sotuvchi muvaffaqiyatli o‘chirildi' };
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error deleting saller: ${error.message}`,
+        `Sotuvchi o‘chirishda xato: ${error.message}`,
       );
-    }
-  }
-
-  async createProduct(
-    dto: CreateProductDto,
-    files: Express.Multer.File[],
-  ): Promise<Object> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      if (
-        (await this.sallerRepository.findOne({
-          where: { id: dto.sallerId },
-        })) === null
-      )
-        throw new NotFoundException('Saller not found');
-      if (dto.stock <= 0)
-        throw new BadRequestException('Stock must be greater than 0');
-      const product = queryRunner.manager.create(Product, dto);
-      await queryRunner.manager.save(product);
-      if (files && files.length > 0) {
-        const productImages: ProductImage[] = [];
-        for (const file of files) {
-          const imagePath = await this.fileService.createFile(file);
-          const productImage = queryRunner.manager.create(ProductImage, {
-            product,
-            ImageUrl: imagePath,
-          });
-          await queryRunner.manager.save(productImage);
-          productImages.push(productImage);
-        }
-        product.images = productImages;
-        await queryRunner.manager.save(product);
-      }
-      await queryRunner.commitTransaction();
-      return { message: 'Product created successfully', productId: product.id };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(
-        `Error creating product: ${error.message}`,
-      );
-    } finally {
-      await queryRunner.release();
     }
   }
 
   async getProduct(id: number): Promise<Product> {
     try {
-      if (isNaN(id)) throw new BadRequestException('Invalid product ID');
+      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri mahsulot ID');
       const product = await this.productRepository.findOne({
         where: { id },
-        relations: ['images'],
+        relations: ['images', 'saller', 'category'],
       });
-      if (!product) throw new NotFoundException(`Product not found: ${id}`);
+      if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
       return product;
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error fetching product: ${error.message}`,
+        `Mahsulot olishda xato: ${error.message}`,
       );
     }
   }
 
-  async getProducts() {
+  async getAllProducts() {
     try {
       const products = await this.productRepository.find({
         relations: {
           images: true,
+          saller: true,
+          category: true,
         },
       });
       if (!products || products.length === 0) {
-        console.log('No products found in the database');
+        console.log('Ma\'lumotlar bazasida mahsulotlar topilmadi');
       }
       return products;
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error fetching products: ${error.message}`,
+        `Mahsulotlarni olishda xato: ${error.message}`,
       );
     }
   }
@@ -269,19 +301,21 @@ export class SallerService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if (isNaN(id)) throw new BadRequestException('Invalid product ID');
-      if (
-        dto.sallerId &&
-        !(await this.sallerRepository.findOne({ where: { id: dto.sallerId } }))
-      )
-        throw new NotFoundException('Saller not found');
+      const {sallerId, categoryId} = dto
+      const saller = await queryRunner.manager.findOne(Saller, {
+        where: { id: sallerId },
+      })
+      const category = await queryRunner.manager.findOne(Category, {
+        where: { id: categoryId },
+      })
+      if(dto.sallerId || dto.categoryId && !saller || !category) throw new BadRequestException('Sotuvchi yoki kategoriya topilmadi')
       if (dto.stock <= 0)
-        throw new BadRequestException('Stock must be greater than 0');
+        throw new BadRequestException('Zaxira miqdori 0 dan katta bo‘lishi kerak');
       const product = await this.productRepository.findOne({
         where: { id },
         relations: ['images'],
       });
-      if (!product) throw new NotFoundException(`Product not found: ${id}`);
+      if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
 
       if (product.images && product.images.length > 0) {
         for (const image of product.images) {
@@ -290,7 +324,7 @@ export class SallerService {
         }
       }
 
-      Object.assign(product, dto);
+      Object.assign(product, {...dto, saller, category});
       await queryRunner.manager.save(product);
 
       if (files && files.length > 0) {
@@ -320,7 +354,7 @@ export class SallerService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(
-        `Error updating product: ${error.message}`,
+        `Mahsulot yangilashda xato: ${error.message}`,
       );
     } finally {
       await queryRunner.release();
@@ -332,12 +366,12 @@ export class SallerService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if (isNaN(id)) throw new BadRequestException('Invalid product ID');
+      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri mahsulot ID');
       const product = await this.productRepository.findOne({
         where: { id },
         relations: ['images'],
       });
-      if (!product) throw new NotFoundException(`Product not found: ${id}`);
+      if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
       if (product.images && product.images.length > 0) {
         for (const image of product.images) {
           await this.fileService.deleteFile(image.ImageUrl);
@@ -346,11 +380,11 @@ export class SallerService {
       }
       await queryRunner.manager.delete(Product, id);
       await queryRunner.commitTransaction();
-      return { message: 'Product deleted successfully' };
+      return { message: 'Mahsulot muvaffaqiyatli o‘chirildi' };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(
-        `Error deleting product: ${error.message}`,
+        `Mahsulot o‘chirishda xato: ${error.message}`,
       );
     } finally {
       await queryRunner.release();

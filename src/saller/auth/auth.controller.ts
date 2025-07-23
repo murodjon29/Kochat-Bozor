@@ -11,6 +11,7 @@ import { SallerAuthService } from './auth.service';
 import { SallerService } from '../saller.service';
 import { SallerLoginDto } from './dto/saller-login.dto';
 import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
+import { SelfGuard } from 'src/utils/guard/self.guard';
 
 @Controller('auth/saller')
 export class SallerAuthController {
@@ -31,7 +32,7 @@ export class SallerAuthController {
     return this.authService.resetPassword(token, password);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Get('profile')
   async getProfile(@Req() request) {
     const saller = await this.sallerService.findByEmail(request.user.email);

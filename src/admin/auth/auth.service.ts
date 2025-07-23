@@ -21,8 +21,6 @@ export class AdminAuthService {
     private configService: ConfigService,
   ) {}
 
-  
-
   async login(dto: AdminLoginDto) {
     const { email, password } = dto;
 

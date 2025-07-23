@@ -31,4 +31,8 @@ export class CreateProductDto {
 
   @IsString()
   region: string;
+
+  @IsNumber()
+  @Type(() => Number)
+  categoryId: number;
 }

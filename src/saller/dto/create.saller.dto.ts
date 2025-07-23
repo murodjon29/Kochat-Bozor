@@ -1,4 +1,9 @@
-import { IsNotEmpty, IsPhoneNumber, IsString, IsStrongPassword } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsPhoneNumber,
+  IsString,
+  IsStrongPassword,
+} from 'class-validator';
 
 export class CreateSallerDto {
   @IsString()
