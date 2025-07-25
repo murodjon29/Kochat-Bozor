@@ -20,8 +20,8 @@ import { CheckRoles } from 'src/utils/decorators/roles.decorator';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @CheckRoles(Role.ADMIN)
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);

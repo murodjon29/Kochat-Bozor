@@ -1,28 +1,24 @@
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Injectable,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { Role } from '../enum';
 
 @Injectable()
 export class SelfGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
-    const user = req.user;
-    const paramId = parseInt(req.params.id, 10);
-
-    if (!user || !user.id)
-      throw new ForbiddenException('User not authenticated');
-
-    if (user.role === Role.SUPERADMIN || user.role === Role.ADMIN) {
+    if (
+      req.user?.role ||
+      req.user?.role === Role.SUPERADMIN ||
+      req.user?.role === Role.ADMIN
+    )
       return true;
-    }
-
-    if (paramId !== user.id) {
-      throw new ForbiddenException('You can only access your own resources');
-    }
+    if (req.params.id !== req.user.id)
+      throw new ForbiddenException('Forbidden user');
     return true;
   }
 }
