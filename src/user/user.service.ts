@@ -124,6 +124,7 @@ export class UserService {
         });
       }
 
+
       // Narx bo‘yicha filtrlar
       if (minPrice) {
         const minPriceValue = parseFloat(minPrice);

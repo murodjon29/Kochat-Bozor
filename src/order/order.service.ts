@@ -25,6 +25,7 @@ export class OrderService {
       if(!product) throw new NotFoundException('Product not found');
       if(product.stock < quantity) throw new BadRequestException(`Zaxirada yetarli mahsulot yo'q: ${product.name}. Mavjud: ${product.stock}, So'ralgan: ${quantity}`);
       product.stock -= quantity;
+      await this.productRepository.update(product.id, product);
       const totalPrice = product.price * quantity;
       const order = this.orderRepository.create({ product, quantity, totalPrice, user: { id: userId } });
       await this.productRepository.save(product);
