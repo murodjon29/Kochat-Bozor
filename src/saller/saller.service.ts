@@ -20,6 +20,7 @@ import { ProductImage } from './entities/image.entitiy';
 import { UpdateDto } from './dto/updet.dto';
 import { UpdateSallerDto } from './dto/update-saller.dto';
 import { Category } from 'src/category/entities/category.entity';
+import { CreateSallerDto } from './dto/create.saller.dto';
 
 @Injectable()
 export class SallerService {
@@ -105,7 +106,7 @@ export class SallerService {
   }
 
   // Quyida qolgan metodlar o‘zgarishsiz qoladi
-  async register(dto: UserDto): Promise<void> {
+  async register(dto: CreateSallerDto): Promise<void> {
     try {
       const { email, password, phone } = dto;
       const normalizedEmail = email.toLowerCase();
@@ -126,6 +127,7 @@ export class SallerService {
         ...dto,
         email: normalizedEmail,
         password: hashedPassword,
+
       });
       await this.sallerRepository.save(newSaller);
       return this.emailVerification(newSaller, OTPType.OTP);
