@@ -49,7 +49,18 @@ export class OrderService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} order`;
+    try {
+      const order = this.orderRepository.findOne({
+        where: {id},
+        relations: ['product', 'user'],
+      })
+      if(!order) throw new NotFoundException('Order not found');
+      return order;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error finding order: ${error.message}`,
+      )
+    }
   }
 
   update(id: number, updateOrderDto: UpdateOrderDto) {
