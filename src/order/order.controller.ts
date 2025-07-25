@@ -1,7 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
+import { RolesGuard } from 'src/utils/guard/roles.guard';
+import { CheckRoles } from 'src/utils/decorators/roles.decorator';
+import { Role } from 'src/utils/enum';
 
 @Controller('user/order')
 export class OrderController {
@@ -12,6 +16,8 @@ export class OrderController {
     return this.orderService.create(createOrderDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @CheckRoles(Role.USER)
   @Get()
   findAll() {
 
