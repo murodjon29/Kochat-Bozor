@@ -22,6 +22,7 @@ import { SelfGuard } from 'src/utils/guard/self.guard';
 import { RolesGuard } from 'src/utils/guard/roles.guard';
 import { CheckRoles } from 'src/utils/decorators/roles.decorator';
 import { Role } from 'src/utils/enum';
+import { CreateSallerDto } from 'src/saller/dto/create.saller.dto';
 
 @Controller('admin')
 export class AdminController {
@@ -60,7 +61,7 @@ export class AdminController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Post('create-saller')
-  async createSaller(@Body() dto: UserDto) {
+  async createSaller(@Body() dto: CreateSallerDto) {
     return await this.adminService.createSaller(dto);
   }
 

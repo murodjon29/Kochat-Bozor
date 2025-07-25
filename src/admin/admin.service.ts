@@ -19,6 +19,7 @@ import { SallerService } from 'src/saller/saller.service';
 import { CreateProductDto } from 'src/saller/dto/product.dto';
 import { updateAdminDto } from './auth/dto/update.admin.dto';
 import { Role } from 'src/utils/enum';
+import { CreateSallerDto } from 'src/saller/dto/create.saller.dto';
 
 @Injectable()
 export class AdminService implements OnModuleInit {
@@ -130,7 +131,7 @@ export class AdminService implements OnModuleInit {
     }
   }
 
-  async createSaller(dto: UserDto): Promise<{ message: string }> {
+  async createSaller(dto: CreateSallerDto): Promise<{ message: string }> {
     try {
       await this.sallerService.register(dto);
       const saller = await this.sallerService.findByEmail(
