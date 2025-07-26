@@ -62,9 +62,28 @@ export class OrderService {
       )
     }
   }
-
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async  update(id: number, updateOrderDto: UpdateOrderDto) {
+    try {
+      const { productId, quantity, userId } = updateOrderDto;
+      const product = await this.productRepository.findOne({ where: {id: productId} });
+      const user = await this.userRepository.findOne({where: {id: userId}});
+      if(!user) throw new NotFoundException('User not found');
+      if(!product) throw new NotFoundException('Product not found');
+      if(product.stock < quantity) throw new BadRequestException(`Zaxirada yetarli mahsulot yo'q: ${product.name}. Mavjud: ${product.stock}, So'ralgan: ${quantity}`);
+      product.stock -= quantity;
+      const totalPrice = product.price * quantity;
+      await this.orderRepository.update(id,  {...updateOrderDto, totalPrice});
+      await this.productRepository.save(product);
+      const order = await this.orderRepository.findOne({
+        where: {id},
+        relations: ['product', 'user'],
+      })
+      return order
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error updating order: ${error.message}`,
+      )
+    }
   }
 
   remove(id: number) {
