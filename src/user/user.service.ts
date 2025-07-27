@@ -89,6 +89,7 @@ export class UserService {
         page = 1,
         limit = 10,
         search,
+        name,
         minPrice,
         maxPrice,
         categoryId,
@@ -122,6 +123,10 @@ export class UserService {
         queryBuilder.andWhere('product.name ILIKE :search', {
           search: `%${search.trim()}%`,
         });
+      }
+
+      if (name) {
+        queryBuilder.andWhere('product.name = :name', {name: name})
       }
 
 
