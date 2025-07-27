@@ -90,6 +90,7 @@ export class UserService {
         limit = 10,
         name,
         search,
+        name,
         minPrice,
         maxPrice,
         categoryId,
@@ -124,6 +125,11 @@ export class UserService {
           search: `%${search.trim()}%`,
         });
       }
+
+      if (name) {
+        queryBuilder.andWhere('product.name = :name', {name: name})
+      }
+
 
       // Narx bo‘yicha filtrlar
       if (minPrice) {

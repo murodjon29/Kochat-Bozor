@@ -26,7 +26,7 @@ export class CreateSallerDto {
 
   @IsString()
   @IsNotEmpty()
-  address: string;
+  addres: string;
 
   @IsString()
   @IsNotEmpty()

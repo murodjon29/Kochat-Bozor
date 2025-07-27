@@ -62,6 +62,8 @@ export class AdminController {
   @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Post('create-saller')
   async createSaller(@Body() dto: CreateSallerDto) {
+    console.log(dto);
+    
     return await this.adminService.createSaller(dto);
   }
 
@@ -72,13 +74,13 @@ export class AdminController {
 
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @CheckRoles(Role.SUPERADMIN)
-  @Get('get-admins')
-  async getAdmins(@Request() req) {
-    const adminId = req.user?.id;
-    if (!adminId || isNaN(Number(adminId)))
-      throw new BadRequestException('Admin not authenticated or invalid ID');
-    return await this.adminService.getAdmins();
-  }
+  // @Get('get-admins')
+  // async getAdmins(@Request() req) {
+  //   const adminId = req.user?.id;
+  //   if (!adminId || isNaN(Number(adminId)))
+  //     throw new BadRequestException('Admin not authenticated or invalid ID');
+  //   return await this.adminService.getAdmins();
+  // }
 
   @Get('get-all-sallers')
   async getAllSellers() {

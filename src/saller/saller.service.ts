@@ -109,6 +109,8 @@ export class SallerService {
   async register(dto: CreateSallerDto): Promise<void> {
     try {
       const { email, password, phone } = dto;
+      console.log(dto);
+      
       const normalizedEmail = email.toLowerCase();
       const existingSaller = await this.sallerRepository.findOne({
         where: { email: normalizedEmail },
