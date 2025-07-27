@@ -12,6 +12,7 @@ import {
   UseGuards,
   NotFoundException,
   Patch,
+  Request,
 } from '@nestjs/common';
 import { SallerService } from './saller.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
@@ -28,6 +29,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/utils/decorators/public.decorator';
 import { CreateSallerDto } from './dto/create.saller.dto';
 import { UpdateSallerDto } from './dto/update-saller.dto';
+import { Response } from 'express';
 
 @Controller('saller')
 export class SallerController {
@@ -67,7 +69,7 @@ export class SallerController {
   }
 
   @UseInterceptors(FilesInterceptor('images'))
-  // @UseGuards(JwtAuthGuard, SelfGuard)
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @Post('post-product')
   async createProduct(
     @Body() dto: CreateProductDto,
@@ -78,7 +80,13 @@ export class SallerController {
     return await this.sallerService.createProduct(dto, files);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @UseGuards(JwtAuthGuard, SelfGuard)
+  // @Get('my-products')
+  // async myProducts(@() request) {
+  //   return await this.sallerService.myProduct(request);
+  // }
+  
+  @UseGuards(JwtAuthGuard, SelfGuard)
   @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Get()
   async getAllSallers() {

@@ -276,6 +276,26 @@ export class SallerService {
     }
   }
 
+  async myProduct(request) {
+    try {
+      const userId = request.user.id;
+      const products = await this.productRepository.find({
+        where: { saller: { id: userId } },
+        relations: {
+          images: true,
+          saller: true,
+          category: true,
+        },
+      })
+      return products
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Mahsulotlarni olishda xato: ${error.message}`,
+      )
+    }
+  }
+
+
   async getAllProducts() {
     try {
       const products = await this.productRepository.find({
