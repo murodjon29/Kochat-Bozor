@@ -12,7 +12,7 @@ import {
   UseGuards,
   NotFoundException,
   Patch,
-  Request,
+  Req,
 } from '@nestjs/common';
 import { SallerService } from './saller.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
@@ -29,7 +29,11 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/utils/decorators/public.decorator';
 import { CreateSallerDto } from './dto/create.saller.dto';
 import { UpdateSallerDto } from './dto/update-saller.dto';
-import { Response } from 'express';
+import { Request } from 'express';
+
+interface MyRequest extends Request {
+  user: any
+}
 
 @Controller('saller')
 export class SallerController {
@@ -67,6 +71,19 @@ export class SallerController {
       message: 'Password reset link has been sent. Please check your mail',
     };
   }
+  @UseGuards(JwtAuthGuard, SelfGuard)
+  @Get('my-products')
+  async getProduct(@Req() req: MyRequest ) {
+    console.log(req.user);
+    
+    return await this.sallerService.myProducts(req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard, SelfGuard)
+  @Get('my-orders')
+  async getMyOreders(@Req() req: MyRequest) {
+    return await this.sallerService.myOrders(req.user.id);
+  }
 
   @UseInterceptors(FilesInterceptor('images'))
   @UseGuards(JwtAuthGuard, SelfGuard)
@@ -80,14 +97,8 @@ export class SallerController {
     return await this.sallerService.createProduct(dto, files);
   }
 
-  // @UseGuards(JwtAuthGuard, SelfGuard)
-  // @Get('my-products')
-  // async myProducts(@() request) {
-  //   return await this.sallerService.myProduct(request);
-  // }
-  
+
   @UseGuards(JwtAuthGuard, SelfGuard)
-  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Get()
   async getAllSallers() {
     return await this.sallerService.findAllSallers();
@@ -114,12 +125,6 @@ export class SallerController {
     return await this.sallerService.deleteAccount(id);
   }
 
-  @Public()
-  @Get('product/:id')
-  async getProduct(@Param('id') id: string) {
-    if (isNaN(+id)) throw new BadRequestException('Invalid product ID');
-    return await this.sallerService.getProduct(+id);
-  }
 
   @UseInterceptors(FilesInterceptor('images'))
   @Patch('product/:id')

@@ -50,16 +50,15 @@ export class AdminController {
   //   return { message: 'Password reset link has been sent. Please check your mail' };
   // }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Post('create-user')
   async createUser(@Body() dto: UserDto) {
     return await this.adminService.createUser(dto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // @CheckRoles(Role.ADMIN, Role.SUPERADMIN)
   @Post('create-saller')
   async createSaller(@Body() dto: CreateSallerDto) {
     console.log(dto);

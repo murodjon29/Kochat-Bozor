@@ -17,10 +17,11 @@ import { FileModule } from 'src/utils/file/file.module';
 import { Product } from 'src/saller/entities/product.entiti';
 import { ProductImage } from 'src/saller/entities/image.entitiy';
 import { CategoryModule } from 'src/category/category.module';
+import { Order } from 'src/order/entities/order.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage,]),
+    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage, Order]),
     forwardRef(() => AdminAuthModule),
     OTPModule,
     CategoryModule,

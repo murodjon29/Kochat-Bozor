@@ -21,12 +21,14 @@ import { UpdateDto } from './dto/updet.dto';
 import { UpdateSallerDto } from './dto/update-saller.dto';
 import { Category } from 'src/category/entities/category.entity';
 import { CreateSallerDto } from './dto/create.saller.dto';
+import { Order } from 'src/order/entities/order.entity';
 
 @Injectable()
 export class SallerService {
   constructor(
     @InjectRepository(Saller) private sallerRepository: Repository<Saller>,
     @InjectRepository(Product) private productRepository: Repository<Product>,
+    @InjectRepository(Order) private orderRepository: Repository<Order>,
     @InjectRepository(ProductImage)
     private imageRepository: Repository<ProductImage>,
     @InjectRepository(Category)
@@ -51,7 +53,9 @@ export class SallerService {
         where: { id: dto.categoryId },
       });
       if (!category) {
-        throw new BadRequestException(`Kategoriya topilmadi: ID ${dto.categoryId}`);
+        throw new BadRequestException(
+          `Kategoriya topilmadi: ID ${dto.categoryId}`,
+        );
       }
 
       // Sotuvchini topish
@@ -64,7 +68,9 @@ export class SallerService {
 
       // Zaxira miqdorini tekshirish
       if (dto.stock <= 0) {
-        throw new BadRequestException('Zaxira miqdori 0 dan katta bo‘lishi kerak');
+        throw new BadRequestException(
+          'Zaxira miqdori 0 dan katta bo‘lishi kerak',
+        );
       }
 
       // Mahsulotni yaratish
@@ -94,7 +100,10 @@ export class SallerService {
       }
 
       await queryRunner.commitTransaction();
-      return { message: 'Mahsulot muvaffaqiyatli yaratildi', productId: product.id };
+      return {
+        message: 'Mahsulot muvaffaqiyatli yaratildi',
+        productId: product.id,
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException(
@@ -110,12 +119,13 @@ export class SallerService {
     try {
       const { email, password, phone } = dto;
       console.log(dto);
-      
+
       const normalizedEmail = email.toLowerCase();
       const existingSaller = await this.sallerRepository.findOne({
         where: { email: normalizedEmail },
       });
-      if (existingSaller) throw new BadRequestException('Email allaqachon mavjud');
+      if (existingSaller)
+        throw new BadRequestException('Email allaqachon mavjud');
       const existingPhoneSaller = await this.sallerRepository.findOne({
         where: { phone },
       });
@@ -129,7 +139,6 @@ export class SallerService {
         ...dto,
         email: normalizedEmail,
         password: hashedPassword,
-
       });
       await this.sallerRepository.save(newSaller);
       return this.emailVerification(newSaller, OTPType.OTP);
@@ -174,8 +183,7 @@ export class SallerService {
       const saller = await this.sallerRepository.findOne({
         where: { email: normalizedEmail },
       });
-      if (!saller)
-        throw new NotFoundException(`Sotuvchi topilmadi: ${email}`);
+      if (!saller) throw new NotFoundException(`Sotuvchi topilmadi: ${email}`);
       return saller;
     } catch (error) {
       throw new InternalServerErrorException(
@@ -188,7 +196,7 @@ export class SallerService {
     try {
       const sallers = await this.sallerRepository.find();
       if (!sallers || sallers.length === 0) {
-        console.log('Ma\'lumotlar bazasida sotuvchilar topilmadi');
+        console.log("Ma'lumotlar bazasida sotuvchilar topilmadi");
       }
       return sallers;
     } catch (error) {
@@ -223,13 +231,15 @@ export class SallerService {
         const emailExists = await this.sallerRepository.findOne({
           where: { email: data.email.toLowerCase() },
         });
-        if (emailExists) throw new BadRequestException('Email allaqachon mavjud');
+        if (emailExists)
+          throw new BadRequestException('Email allaqachon mavjud');
       }
       if (data.phone && data.phone !== saller.phone) {
         const phoneExists = await this.sallerRepository.findOne({
           where: { phone: data.phone },
         });
-        if (phoneExists) throw new BadRequestException('Telefon raqami allaqachon mavjud');
+        if (phoneExists)
+          throw new BadRequestException('Telefon raqami allaqachon mavjud');
       }
       if (data.password) {
         data.password = await bcrypt.hash(
@@ -260,11 +270,11 @@ export class SallerService {
     }
   }
 
-  async getProduct(id: number): Promise<Product> {
+  async myProducts(id: number) {
     try {
       if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri mahsulot ID');
-      const product = await this.productRepository.findOne({
-        where: { id },
+      const product = await this.productRepository.find({
+        where: { saller: { id } },
         relations: ['images', 'saller', 'category'],
       });
       if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
@@ -276,25 +286,23 @@ export class SallerService {
     }
   }
 
-  async myProduct(request) {
+  async myOrders(id: number) {
     try {
-      const userId = request.user.id;
-      const products = await this.productRepository.find({
-        where: { saller: { id: userId } },
-        relations: {
-          images: true,
-          saller: true,
-          category: true,
-        },
+      const orders = await this.orderRepository.find({
+        where: { user: { id } },
+        relations: ['product', 'user'],
       })
-      return products
+      if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
+      const product = await this.productRepository.find({
+        // where: { : {}}
+      })
+      return orders
     } catch (error) {
       throw new InternalServerErrorException(
-        `Mahsulotlarni olishda xato: ${error.message}`,
+        `Mahsulot olishda xato: ${error.message}`,
       )
     }
   }
-
 
   async getAllProducts() {
     try {
@@ -306,7 +314,7 @@ export class SallerService {
         },
       });
       if (!products || products.length === 0) {
-        console.log('Ma\'lumotlar bazasida mahsulotlar topilmadi');
+        console.log("Ma'lumotlar bazasida mahsulotlar topilmadi");
       }
       return products;
     } catch (error) {
@@ -325,30 +333,34 @@ export class SallerService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const {sallerId, categoryId} = dto
+      const { sallerId, categoryId } = dto;
       const saller = await queryRunner.manager.findOne(Saller, {
         where: { id: sallerId },
-      })
+      });
       const category = await queryRunner.manager.findOne(Category, {
         where: { id: categoryId },
-      })
-      if(dto.sallerId || dto.categoryId && !saller || !category) throw new BadRequestException('Sotuvchi yoki kategoriya topilmadi')
+      });
+      if (dto.sallerId  && !saller)
+        throw new BadRequestException('Sotuvchi topilmadi');
+      if(dto.categoryId && !category) throw new BadRequestException('Kategoriya topilmadi');
       if (dto.stock <= 0)
-        throw new BadRequestException('Zaxira miqdori 0 dan katta bo‘lishi kerak');
+        throw new BadRequestException(
+          'Zaxira miqdori 0 dan katta bo‘lishi kerak',
+        );
       const product = await this.productRepository.findOne({
         where: { id },
         relations: ['images'],
       });
       if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
 
-      if (product.images && product.images.length > 0) {
-        for (const image of product.images) {
-          await this.fileService.deleteFile(image.ImageUrl);
-          await queryRunner.manager.delete(ProductImage, image.id);
-        }
-      }
+      // if (product.images && product.images.length > 0) {
+      //   for (const image of product.images) {
+      //     await this.fileService.deleteFile(image.ImageUrl);
+      //     await queryRunner.manager.delete(ProductImage, image.id);
+      //   }
+      // }
 
-      Object.assign(product, {...dto, saller, category});
+      Object.assign(product, { ...dto, saller, category });
       await queryRunner.manager.save(product);
 
       if (files && files.length > 0) {
@@ -372,7 +384,7 @@ export class SallerService {
       await queryRunner.commitTransaction();
       const updatedProduct = await this.productRepository.findOne({
         where: { id },
-        relations: ['images'],
+        relations: ['images', 'saller', 'category'],
       });
       return updatedProduct;
     } catch (error) {
@@ -414,4 +426,6 @@ export class SallerService {
       await queryRunner.release();
     }
   }
+
+
 }

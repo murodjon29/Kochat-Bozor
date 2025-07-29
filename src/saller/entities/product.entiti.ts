@@ -6,10 +6,12 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { ProductImage } from './image.entitiy';
 import { Saller } from './saller.entity';
 import { Category } from 'src/category/entities/category.entity';
+import { Like } from 'src/like/entities/like.entity';
 
 @Entity('product')
 export class Product extends BaseDatabase {
@@ -25,10 +27,10 @@ export class Product extends BaseDatabase {
   @Column()
   stock: number;
 
-  @Column()
+  @Column({type: 'float'})
   height: number;
 
-  @Column()
+  @Column({type: 'float'})
   age: number;
 
   @Column()
@@ -53,4 +55,10 @@ export class Product extends BaseDatabase {
   })
   @JoinColumn({ name: 'categoryId' })
   category: Category;
+
+  @OneToOne(() => Like, (like) => like.likes, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  likes: Like;
 }
