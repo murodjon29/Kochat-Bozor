@@ -90,7 +90,7 @@ export class UserService {
         limit = 10,
         name,
         search,
-        name,
+        nomi,
         minPrice,
         maxPrice,
         categoryId,
@@ -126,8 +126,8 @@ export class UserService {
         });
       }
 
-      if (name) {
-        queryBuilder.andWhere('product.name = :name', {name: name})
+      if (nomi) {
+        queryBuilder.andWhere('product.name = :name', {name: nomi})
       }
 
 
