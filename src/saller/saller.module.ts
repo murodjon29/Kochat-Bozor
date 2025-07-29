@@ -15,9 +15,10 @@ import { Product } from './entities/product.entiti';
 import { ProductImage } from './entities/image.entitiy';
 import { Category } from 'src/category/entities/category.entity';
 import { CategoryModule } from 'src/category/category.module';
+import { Order } from 'src/order/entities/order.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Saller, Product, ProductImage, Category]),
+    TypeOrmModule.forFeature([Saller, Product, ProductImage, Category, Order]),
     forwardRef(() => SallerAuthModule),
     OTPModule,
     EmailModule,

@@ -23,6 +23,8 @@ import { CategoryModule } from './category/category.module';
 import { Category } from './category/entities/category.entity';
 import { OrderModule } from './order/order.module';
 import { Order } from './order/entities/order.entity';
+import { LikeModule } from './like/like.module';
+import { Like } from './like/entities/like.entity';
 
 @Module({
   imports: [
@@ -37,7 +39,7 @@ import { Order } from './order/entities/order.entity';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [Saller, Product, ProductImage, User, Admin, Category, Order],
+        entities: [Saller, Product, ProductImage, User, Admin, Category, Order, Like],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -57,6 +59,7 @@ import { Order } from './order/entities/order.entity';
     EmailModule,
     CategoryModule,
     OrderModule,
+    LikeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

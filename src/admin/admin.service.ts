@@ -183,15 +183,15 @@ export class AdminService implements OnModuleInit {
   }
 
   async deleteProduct(id: number) {
-    try {
-      if (isNaN(id)) throw new BadRequestException('Invalid product ID');
-      this.sallerService.deleteProduct(id);
-      return { message: 'Product deleted successfully' };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Error deleting product: ${error.message}`,
-      );
-    }
+    // try {
+    //   if (isNaN(id)) throw new BadRequestException('Invalid product ID');
+    //   this.sallerService.(id);
+    //   return { message: 'Product deleted successfully' };
+    // } catch (error) {
+    //   throw new InternalServerErrorException(
+    //     `Error deleting product: ${error.message}`,
+    //   );
+    // }
   }
 
   async deleteSaller(id: number) {
