@@ -23,10 +23,17 @@ import { RolesGuard } from 'src/utils/guard/roles.guard';
 import { CheckRoles } from 'src/utils/decorators/roles.decorator';
 import { SelfGuard } from 'src/utils/guard/self.guard';
 import { Role } from 'src/utils/enum';
+import { MyRequest } from 'src/saller/saller.controller';
 
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
+
+  @UseGuards(JwtAuthGuard, SelfGuard)
+  @Get('my-orders')
+  async myOrder(@Req() req: MyRequest) {
+    return await this.userService.myOrders(req.user.id);
+  }
 
   @Post('register')
   async register(@Body() userDto: UserDto) {
@@ -41,7 +48,7 @@ export class UserController {
     await this.userService.emailVerification(user, OTPType.OTP);
     return { message: 'OTP muvaffaqiyatli yuborildi. Emailingizni tekshiring' };
   }
-
+  
   @Post('forgot-password')
   async forgotPassword(@Body() dto: RequestTokenDto) {
     const normalizedEmail = dto.email.toLowerCase();
@@ -56,6 +63,7 @@ export class UserController {
   async getAllProduct(@Query() query: any) {
     return await this.userService.getFilter(query);
   }
+
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @CheckRoles(Role.ADMIN, Role.SUPERADMIN)

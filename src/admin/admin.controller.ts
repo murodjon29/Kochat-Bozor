@@ -2,31 +2,22 @@ import {
   Body,
   Controller,
   Post,
-  NotFoundException,
   Get,
-  Put,
   Delete,
   Param,
-  UseGuards,
-  Request,
   BadRequestException,
-  Patch,
+  Query,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { RequestTokenDto } from '../user/dto/request-token.dto';
 import { UserDto } from 'src/user/dto/user.dto';
-import { OTPType } from 'src/utils/otp/types/otp-type';
-import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
-import { Admin } from './entities/admin.entity';
-import { SelfGuard } from 'src/utils/guard/self.guard';
-import { RolesGuard } from 'src/utils/guard/roles.guard';
-import { CheckRoles } from 'src/utils/decorators/roles.decorator';
-import { Role } from 'src/utils/enum';
 import { CreateSallerDto } from 'src/saller/dto/create.saller.dto';
+import { UserService } from 'src/user/user.service';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService,
+    private readonly userSerive: UserService
+  ) {}
 
   // @Post('register')
   // async register(@Body() adminDto: UserDto) {
@@ -64,6 +55,11 @@ export class AdminController {
     console.log(dto);
     
     return await this.adminService.createSaller(dto);
+  }
+
+  @Get('filter')
+  async getFilter(@Query() query: any) {
+    return await this.userSerive.getFilter(query);
   }
 
   @Get('get-all-users')
