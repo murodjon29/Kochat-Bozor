@@ -14,12 +14,15 @@ import { ConfigService } from '@nestjs/config';
 import { OTPService } from 'src/utils/otp/otp.service';
 import { EmailService } from 'src/email/email.service';
 import { OTPType } from 'src/utils/otp/types/otp-type';
+import { Saller } from 'src/saller/entities/saller.entity';
+import { Order } from 'src/order/entities/order.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Product) private productRepository: Repository<Product>,
+    @InjectRepository(Order) private orderRepository: Repository<Order>,
     private otpService: OTPService,
     private emailService: EmailService,
     private configService: ConfigService,
@@ -127,7 +130,7 @@ export class UserService {
       }
 
       if (nomi) {
-        queryBuilder.andWhere('product.name = :name', {name: nomi})
+        queryBuilder.andWhere('product.name ILIKE :name', {name: nomi})
       }
 
 
@@ -357,6 +360,21 @@ export class UserService {
       throw new InternalServerErrorException(
         `Foydalanuvchi o‘chirishda xato: ${error.message}`,
       );
+    }
+  }
+
+  async myOrders(id: number) {
+    try {
+      const orders = await this.orderRepository.find({
+        where: { user: { id } },
+        relations: ['product', 'user'],
+      })
+      if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
+      return orders
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Mahsulot olishda xato: ${error.message}`,
+      )
     }
   }
 }

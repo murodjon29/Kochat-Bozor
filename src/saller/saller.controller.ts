@@ -71,8 +71,6 @@ export class SallerController {
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Get('my-products')
   async getProduct(@Req() req: MyRequest ) {
-    console.log(req.user);
-    
     return await this.sallerService.myProducts(req.user.id);
   }
 
