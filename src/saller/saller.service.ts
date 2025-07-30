@@ -293,9 +293,6 @@ export class SallerService {
         relations: ['product', 'user'],
       })
       if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
-      const product = await this.productRepository.find({
-        // where: { : {}}
-      })
       return orders
     } catch (error) {
       throw new InternalServerErrorException(

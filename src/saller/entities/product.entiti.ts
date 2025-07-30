@@ -3,10 +3,8 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
   OneToMany,
-  OneToOne,
 } from 'typeorm';
 import { ProductImage } from './image.entitiy';
 import { Saller } from './saller.entity';
@@ -56,7 +54,7 @@ export class Product extends BaseDatabase {
   @JoinColumn({ name: 'categoryId' })
   category: Category;
 
-  @OneToOne(() => Like, (like) => like.likes, {
+  @OneToMany(() => Like, (like) => like.likes, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })

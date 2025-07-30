@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Param,
   Body,
@@ -10,7 +9,6 @@ import {
   UseInterceptors,
   BadRequestException,
   UseGuards,
-  NotFoundException,
   Patch,
   Req,
 } from '@nestjs/common';
@@ -18,7 +16,6 @@ import { SallerService } from './saller.service';
 import { RequestTokenDto } from '../user/dto/request-token.dto';
 import { OTPType } from 'src/utils/otp/types/otp-type';
 import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
-import { Saller } from './entities/saller.entity';
 import { SelfGuard } from 'src/utils/guard/self.guard';
 import { RolesGuard } from 'src/utils/guard/roles.guard';
 import { CheckRoles } from 'src/utils/decorators/roles.decorator';
@@ -31,7 +28,7 @@ import { CreateSallerDto } from './dto/create.saller.dto';
 import { UpdateSallerDto } from './dto/update-saller.dto';
 import { Request } from 'express';
 
-interface MyRequest extends Request {
+export interface MyRequest extends Request {
   user: any
 }
 
