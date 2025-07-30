@@ -88,6 +88,7 @@ export class UserService {
       const {
         page = 1,
         limit = 10,
+        name,
         search,
         nomi,
         minPrice,
@@ -161,6 +162,11 @@ export class UserService {
           categoryId: categoryIdValue,
         });
       }
+
+      if (name) {
+        queryBuilder.andWhere('product.name = :name', {name: name})
+      }
+
 
       // Hudud bo‘yicha filtr
       if (region && typeof region === 'string' && region.trim().length > 0) {
