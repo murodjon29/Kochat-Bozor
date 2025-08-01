@@ -16,6 +16,7 @@ import { EmailService } from 'src/email/email.service';
 import { OTPType } from 'src/utils/otp/types/otp-type';
 import { Saller } from 'src/saller/entities/saller.entity';
 import { Order } from 'src/order/entities/order.entity';
+import { Like } from 'src/like/entities/like.entity';
 
 @Injectable()
 export class UserService {
@@ -23,6 +24,7 @@ export class UserService {
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(Order) private orderRepository: Repository<Order>,
+    @InjectRepository(Like) private likeRepository: Repository<Like>,
     private otpService: OTPService,
     private emailService: EmailService,
     private configService: ConfigService,
@@ -365,6 +367,19 @@ export class UserService {
       })
       if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
       return orders
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Mahsulot olishda xato: ${error.message}`,
+      )
+    }
+  }
+
+  async myFavotirites (id: number) {
+    try {
+      const favorite = await this.likeRepository.find({
+        where: { user: { id } },
+        relations: ['product', 'user'],
+      })
     } catch (error) {
       throw new InternalServerErrorException(
         `Mahsulot olishda xato: ${error.message}`,

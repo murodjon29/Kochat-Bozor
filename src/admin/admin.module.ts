@@ -18,10 +18,11 @@ import { Product } from 'src/saller/entities/product.entiti';
 import { ProductImage } from 'src/saller/entities/image.entitiy';
 import { CategoryModule } from 'src/category/category.module';
 import { Order } from 'src/order/entities/order.entity';
+import { Like } from 'src/like/entities/like.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage, Order]),
+    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage, Order, Like]),
     forwardRef(() => AdminAuthModule),
     OTPModule,
     CategoryModule,
