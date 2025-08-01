@@ -380,6 +380,7 @@ export class UserService {
         where: { user: { id } },
         relations: ['product', 'user'],
       })
+      return favorite
     } catch (error) {
       throw new InternalServerErrorException(
         `Mahsulot olishda xato: ${error.message}`,
