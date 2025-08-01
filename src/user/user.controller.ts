@@ -35,6 +35,12 @@ export class UserController {
     return await this.userService.myOrders(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard, SelfGuard)
+  @Get('my-favorites')
+  async myFavotirites(@Req() req: MyRequest) {
+    return await this.userService.myFavotirites(req.user.id);
+  }
+
   @Post('register')
   async register(@Body() userDto: UserDto) {
     await this.userService.register(userDto);

@@ -12,10 +12,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SallerModule } from 'src/saller/saller.module';
 import { Product } from 'src/saller/entities/product.entiti';
 import { Order } from 'src/order/entities/order.entity';
+import { Like } from 'src/like/entities/like.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Product, Order]),
+    TypeOrmModule.forFeature([User, Product, Order, Like]),
     forwardRef(() => UserAuthModule),
     OTPModule,
     EmailModule,
