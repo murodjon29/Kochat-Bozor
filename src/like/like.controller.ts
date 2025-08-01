@@ -19,7 +19,6 @@ import { MyRequest } from 'src/saller/saller.controller';
 export class LikeController {
   constructor(private readonly likeService: LikeService) {}
 
-  // ✅ Like yaratish yoki o‘chirish (toggle)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @CheckRoles(Role.USER)
   @Post()
@@ -28,7 +27,6 @@ export class LikeController {
     return this.likeService.create(userId, createLikeDto.productId);
   }
 
-  // ✅ Foydalanuvchining barcha likelari
   @UseGuards(JwtAuthGuard, RolesGuard)
   @CheckRoles(Role.USER)
   @Get()
