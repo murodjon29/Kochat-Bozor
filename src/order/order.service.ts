@@ -49,6 +49,7 @@ export class OrderService {
     }
   }
 
+
   async findOne(id: number) {
     try {
       const order = await this.orderRepository.findOne({where: {id}})
@@ -76,6 +77,9 @@ export class OrderService {
       return updatedOrder
     } catch (error) {
       throw new InternalServerErrorException(`Orderni yangilashda xato: ${error.message}`)
+
+
+
     }
   }
 

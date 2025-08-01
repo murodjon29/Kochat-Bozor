@@ -21,8 +21,10 @@ export class OrderController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @CheckRoles(Role.ADMIN)
+
   @Get()
   findAll() {
+
     return this.orderService.findAll();
   }
 
