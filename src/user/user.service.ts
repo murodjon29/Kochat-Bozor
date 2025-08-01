@@ -369,7 +369,7 @@ export class UserService {
     try {
       const orders = await this.orderRepository.find({
         where: { user: { id } },
-        relations: ['product', 'user'],
+        relations: ['product', ],
       })
       if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
       return orders
