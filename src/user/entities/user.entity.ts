@@ -21,10 +21,10 @@ export class User extends BaseDatabase {
   @Column({ default: 'unverified' })
   accountStatus: 'verified' | 'unverified';
 
-  @OneToMany(() => Order, (order) => order.user)
+  @OneToMany(() => Order, (order) => order.user, {onDelete: 'CASCADE', onUpdate: 'CASCADE',})
   orders: Order[];
 
-  @OneToMany(() => Like, (like) => like.user)
+  @OneToMany(() => Like, (like) => like.user, {onDelete: 'CASCADE', onUpdate: 'CASCADE',})
   likes: Like[];
 
   @Column({ default: Role.USER })

@@ -6,6 +6,7 @@ import { Order } from './entities/order.entity';
 import { Product } from 'src/saller/entities/product.entiti';
 import { User } from 'src/user/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
+
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -19,6 +20,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
           signOptions: { expiresIn: '1h' },
         }),
       }),
+
 ],
   controllers: [OrderController],
   providers: [OrderService],
