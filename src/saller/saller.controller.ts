@@ -133,8 +133,8 @@ export class SallerController {
     return await this.sallerService.updateProduct(+id, dto, files);
   }
 
-  @UseGuards(JwtAuthGuard, SelfGuard, RolesGuard)
-  @CheckRoles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard, SelfGuard)
+  // @CheckRoles(Role.ADMIN)
   @Delete('product/:id')
   async deleteProduct(@Param('id') id: string) {
     if (isNaN(+id)) throw new BadRequestException('Invalid product ID');
