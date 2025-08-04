@@ -4,6 +4,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/utils/guard/roles.guard';
+
 import { Role } from 'src/utils/enum';
 import { CheckRoles } from 'src/utils/decorators/roles.decorator';
 import { SelfGuard } from 'src/utils/guard/self.guard';
@@ -20,9 +21,11 @@ export class OrderController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
+
   @CheckRoles(Role.ADMIN)
   @Get()
   findAll() {
+
     return this.orderService.findAll();
   }
 
