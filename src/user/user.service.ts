@@ -337,7 +337,7 @@ export class UserService {
         );
       }
       await this.userRepository.update(id, data);
-      return await this.userRepository.findOne({ where: { id } });
+      return await this.userRepository.findOne({ where: { id } , relations: ['likes', 'orders'] });
     } catch (error) {
       throw new InternalServerErrorException(
         `Foydalanuvchi profilini yangilashda xato: ${error.message}`,

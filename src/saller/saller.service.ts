@@ -248,7 +248,7 @@ export class SallerService {
         );
       }
       await this.sallerRepository.update(id, data);
-      return await this.sallerRepository.findOne({ where: { id } });
+      return await this.sallerRepository.findOne({ where: { id },  relations: ['products'] });
     } catch (error) {
       throw new InternalServerErrorException(
         `Sotuvchi profilini yangilashda xato: ${error.message}`,
