@@ -255,6 +255,7 @@ export class SallerService {
       );
     };
   }
+  
 
   async deleteAccount(id: number): Promise<{ message: string }> {
     try {
