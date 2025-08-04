@@ -2,29 +2,27 @@ name: Deploy to VPS
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  build-and-deploy:
-    runs-on: self-hosted
+  deploy:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: 🔄 Repo klonlash
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: 📦 Dependencies o‘rnatish
-        run: npm install
+    - name: Setup SSH key
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: 🛠 Build qilish
-        run: npm run build
-
-      - name: 📁 Fayllarni kerakli joyga ko‘chirish
-        run: |
-          rm -rf /home/ubuntu/app-backend
-          mkdir -p /home/ubuntu/app-backend
-          cp -r . /home/ubuntu/app-backend
-
-      - name: 🔁 Servisni qayta ishga tushirish
-        run: |
+    - name: Deploy to VPS via SSH
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          cd ~/project/Kochat-Bozor
+          git pull origin main
+          npm install --legacy-peer-deps
+          npm run build
           sudo systemctl restart backend.service
+        EOF
