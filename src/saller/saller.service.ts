@@ -253,7 +253,7 @@ export class SallerService {
       throw new InternalServerErrorException(
         `Sotuvchi profilini yangilashda xato: ${error.message}`,
       );
-    }
+    };
   }
 
   async deleteAccount(id: number): Promise<{ message: string }> {
