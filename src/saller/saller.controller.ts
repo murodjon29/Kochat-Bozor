@@ -134,7 +134,6 @@ export class SallerController {
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)
-  // @CheckRoles(Role.ADMIN)
   @Delete('product/:id')
   async deleteProduct(@Param('id') id: string) {
     if (isNaN(+id)) throw new BadRequestException('Invalid product ID');
