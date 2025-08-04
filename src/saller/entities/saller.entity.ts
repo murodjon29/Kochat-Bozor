@@ -32,6 +32,9 @@ export class Saller extends BaseDatabase {
   @Column({ default: Role.SALLER })
   role: Role;
 
-  @OneToMany(() => Product, (product) => product.saller)
+  @OneToMany(() => Product, (product) => product.saller, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   products: Product[];
 }
