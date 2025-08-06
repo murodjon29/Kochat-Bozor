@@ -91,7 +91,7 @@ export class SallerAuthService {
   async resetPassword(token: string, newPassword: string): Promise<string> {
     try {
       const { id: sallerId } =
-        await this.otpService.validateResetPassword(token);
+      await this.otpService.validateResetPassword(token);
       const saller = await this.sallerRepository.findOne({
         where: { id: sallerId },
       });
