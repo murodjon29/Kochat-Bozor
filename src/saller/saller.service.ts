@@ -188,7 +188,7 @@ export class SallerService {
 
   async findAllSallers(): Promise<Saller[]> {
     try {
-      const sallers = await this.sallerRepository.find();
+      const sallers = await this.sallerRepository.find({ relations: ['product'] });
       if (!sallers || sallers.length === 0) {
         console.log("Ma'lumotlar bazasida sotuvchilar topilmadi");
       }

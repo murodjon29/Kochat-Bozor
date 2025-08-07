@@ -292,7 +292,7 @@ export class UserService {
 
   async findAllUser(): Promise<User[]> {
     try {
-      const users = await this.userRepository.find();
+      const users = await this.userRepository.find({relations: ['like', 'order']});
       if (!users || users.length === 0) {
         console.log('Ma\'lumotlar bazasida foydalanuvchilar topilmadi');
       }
