@@ -6,7 +6,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { OTPService } from 'src/utils/otp/otp.service';
@@ -20,16 +20,19 @@ import { CreateProductDto } from 'src/saller/dto/product.dto';
 import { updateAdminDto } from './auth/dto/update.admin.dto';
 import { Role } from 'src/utils/enum';
 import { CreateSallerDto } from 'src/saller/dto/create.saller.dto';
+import { Product } from 'src/saller/entities/product.entiti';
+import { ProductImage } from 'src/saller/entities/image.entitiy';
+import { FileService } from 'src/utils/file/file.service';
 
 @Injectable()
 export class AdminService implements OnModuleInit {
   constructor(
     @InjectRepository(Admin) private adminRepository: Repository<Admin>,
+    @InjectRepository(Product) private productRepository: Repository<Product>,
     private readonly userService: UserService,
     private readonly sallerService: SallerService,
-    private readonly otpService: OTPService,
-    private readonly emailService: EmailService,
-    private readonly configService: ConfigService,
+    private readonly fileService: FileService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async onModuleInit() {
@@ -206,17 +209,36 @@ export class AdminService implements OnModuleInit {
     }
   }
 
-  async deleteProduct(id: number) {
-    // try {
-    //   if (isNaN(id)) throw new BadRequestException('Invalid product ID');
-    //   this.sallerService.(id);
-    //   return { message: 'Product deleted successfully' };
-    // } catch (error) {
-    //   throw new InternalServerErrorException(
-    //     `Error deleting product: ${error.message}`,
-    //   );
-    // }
-  }
+  async deleteProduct(id: number): Promise<{ message: string }> {
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri mahsulot ID');
+        const product = await this.productRepository.findOne({
+          where: { id },
+          relations: ['images'],
+        });
+        if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
+        if (product.images && product.images.length > 0) {
+          for (const image of product.images) {
+            await this.fileService.deleteFile(image.ImageUrl);
+            await queryRunner.manager.delete(ProductImage, image.id);
+          }
+        }
+        await queryRunner.manager.delete(Product, id);
+        await queryRunner.commitTransaction();
+        return { message: 'Mahsulot muvaffaqiyatli o‘chirildi' };
+      } catch (error) {
+        await queryRunner.rollbackTransaction();
+        throw new InternalServerErrorException(
+          `Mahsulot o‘chirishda xato: ${error.message}`,
+        );
+      } finally {
+        await queryRunner.release();
+      }
+    }
+  
 
   async deleteSaller(id: number) {
     try {
