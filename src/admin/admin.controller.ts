@@ -57,12 +57,12 @@ export class AdminController {
     return await this.adminService.createSaller(dto);
   }
 
-  @Get('get-users/:id')
+  @Get('get-user/:id')
   async getUsers(@Param('id') id: string) {
     return await this.adminService.findOneUser(+id);
   }
 
-  @Get('get-sallers/:id')
+  @Get('get-saller/:id')
   async getSallers(@Param('id') id: string) {
     return await this.adminService.findOneSaller(+id);
   }
