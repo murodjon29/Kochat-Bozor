@@ -57,6 +57,16 @@ export class AdminController {
     return await this.adminService.createSaller(dto);
   }
 
+  @Get('get-users/:id')
+  async getUsers(@Param('id') id: string) {
+    return await this.adminService.findOneUser(+id);
+  }
+
+  @Get('get-sallers/:id')
+  async getSallers(@Param('id') id: string) {
+    return await this.adminService.findOneSaller(+id);
+  }
+
   @Get('filter')
   async getFilter(@Query() query: any) {
     return await this.userSerive.getFilter(query);

@@ -48,7 +48,6 @@ export class SallerService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      // Kategoriyani topish
       const category = await queryRunner.manager.findOne(Category, {
         where: { id: dto.categoryId },
       });
@@ -58,7 +57,6 @@ export class SallerService {
         );
       }
 
-      // Sotuvchini topish
       const saller = await queryRunner.manager.findOne(Saller, {
         where: { id: dto.sallerId },
       });
@@ -66,24 +64,19 @@ export class SallerService {
         throw new NotFoundException(`Sotuvchi topilmadi: ID ${dto.sallerId}`);
       }
 
-      // Zaxira miqdorini tekshirish
       if (dto.stock <= 0) {
         throw new BadRequestException(
           'Zaxira miqdori 0 dan katta bo‘lishi kerak',
         );
       }
-
-      // Mahsulotni yaratish
       const product = queryRunner.manager.create(Product, {
         ...dto,
-        saller, // Sotuvchi entitysini bog‘lash
-        category, // Kategoriya entitysini bog‘lash
+        saller, 
+        category, 
       });
 
-      // Mahsulotni saqlash
-      await queryRunner.manager.save(Product, product);
 
-      // Rasmlarni saqlash
+      await queryRunner.manager.save(Product, product);
       if (files && files.length > 0) {
         const productImages: ProductImage[] = [];
         for (const file of files) {
@@ -114,7 +107,6 @@ export class SallerService {
     }
   }
 
-  // Quyida qolgan metodlar o‘zgarishsiz qoladi
   async register(dto: CreateSallerDto): Promise<void> {
     try {
       const { email, password, phone } = dto;
@@ -158,8 +150,8 @@ export class SallerService {
       if (otpType === OTPType.OTP) {
         await this.emailService.sendEmail({
           recipients: [saller.email],
-          subject: 'Tasdiqlash uchun OTP',
-          html: `Sizning OTP kodingiz: <strong>${token}</strong>. Hisobingizni tasdiqlash uchun ushbu OTP dan foydalaning`,
+          subject: 'Tasdiqlash uchun code',
+          html: `Sizning code kodingiz: <strong>${token}</strong>. Hisobingizni tasdiqlash uchun ushbu  dan foydalaning`,
         });
       } else if (otpType === OTPType.RESET_LINK) {
         const resetLink = `${this.configService.get('RESET_PASSWORD_URL')}?token=${token}`;
@@ -331,15 +323,10 @@ export class SallerService {
   await queryRunner.connect();
   await queryRunner.startTransaction();
   try {
-    const { sallerId, categoryId } = dto;
-    const saller = await queryRunner.manager.findOne(Saller, {
-      where: { id: sallerId },
-    });
+    const { categoryId } = dto;
     const category = await queryRunner.manager.findOne(Category, {
       where: { id: categoryId },
     });
-    if (dto.sallerId && !saller)
-      throw new BadRequestException('Sotuvchi topilmadi');
     if (dto.categoryId && !category)
       throw new BadRequestException('Kategoriya topilmadi');
     if (dto.stock <= 0)
@@ -353,7 +340,7 @@ export class SallerService {
     });
     if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
 
-    Object.assign(product, { ...dto, saller, category });
+    Object.assign(product, { ...dto, category });
     await queryRunner.manager.save(product);
 
     if (files && files.length > 0) {

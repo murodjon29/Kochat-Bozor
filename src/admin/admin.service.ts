@@ -60,6 +60,30 @@ export class AdminService implements OnModuleInit {
     }
   }
 
+  async findOneUser(id: number) {
+    try {
+      const user = await this.userService.findById(id);
+      if (!user) throw new NotFoundException(`User not found: ${id}`);
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error finding user: ${error.message}`,
+      )
+    }
+  }
+
+  async findOneSaller(id: number) {
+    try {
+      const saller = await this.sallerService.findById(id);
+      if (!saller) throw new NotFoundException(`Saller not found: ${id}`);
+      return saller;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Error finding saller: ${error.message}`,
+      )
+    }
+  }
+
   async findById(id: number): Promise<Admin> {
     try {
       if (isNaN(id)) throw new BadRequestException('Invalid admin ID');

@@ -62,17 +62,9 @@ export class OrderService {
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
     try {
-      const {userId, productId, quantity} = updateOrderDto 
-      const user = await this.userRepository.findOne({where: {id: userId}})
-      const product = await this.productRepository.findOne({where: {id: productId}})
-      if(!user || !product) throw new NotFoundException('User or product not found');
       const order = await this.orderRepository.findOne({where: {id}})
       if(!order) throw new NotFoundException(`Order not found id: ${id}`);
-      order.user = user;
-      order.product = product;
-      order.quantity = quantity;
-      order.totalPrice = product.price * quantity;
-      await this.orderRepository.save(order)
+      await this.orderRepository.update(id, updateOrderDto)
       const updatedOrder = await this.orderRepository.findOne({where: {id}, relations: ['product', 'user']})
       return updatedOrder
     } catch (error) {

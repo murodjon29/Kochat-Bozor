@@ -50,7 +50,7 @@ export class SallerAuthService {
     if (saller.accountStatus === 'unverified') {
       if (!otp) {
         return {
-          message: 'Hisobingiz tasdiqlanmagan. Iltimos, OTP kodini kiriting',
+          message: 'Hisobingiz tasdiqlanmagan. Iltimos, codeni kodini kiriting',
         };
       }
       await this.verifyToken(saller.id, otp);
