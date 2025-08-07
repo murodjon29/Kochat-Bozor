@@ -72,6 +72,7 @@ export class SallerService {
       }
       const product = queryRunner.manager.create(Product, {
         ...dto,
+        name: dto.name.trim(),
         saller, 
         category, 
       });
