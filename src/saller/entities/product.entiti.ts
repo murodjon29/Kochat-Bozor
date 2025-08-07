@@ -40,10 +40,7 @@ export class Product extends BaseDatabase {
   })
   images: ProductImage[];
 
-  @ManyToOne(() => Saller, (saller) => saller.products, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
+  @ManyToOne(() => Saller, (saller) => saller.products)
   @JoinColumn({ name: 'sallerId' })
   saller: Saller;
 
