@@ -307,7 +307,7 @@ export class UserService {
   async findById(id: number): Promise<User> {
     try {
       if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
-      const user = await this.userRepository.findOne({ where: { id } });
+      const user = await this.userRepository.findOne({ where: { id }, relations:  ['like', 'order'] });
       if (!user) throw new NotFoundException(`Foydalanuvchi topilmadi: ${id}`);
       return user;
     } catch (error) {
