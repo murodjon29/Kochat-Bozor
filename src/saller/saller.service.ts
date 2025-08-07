@@ -188,7 +188,7 @@ export class SallerService {
 
   async findAllSallers(): Promise<Saller[]> {
     try {
-      const sallers = await this.sallerRepository.find({ relations: ['product'] });
+      const sallers = await this.sallerRepository.find({ relations: ['products'] });
       if (!sallers || sallers.length === 0) {
         console.log("Ma'lumotlar bazasida sotuvchilar topilmadi");
       }
@@ -203,7 +203,7 @@ export class SallerService {
   async findById(id: number): Promise<Saller> {
     try {
       if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri sotuvchi ID');
-      const saller = await this.sallerRepository.findOne({ where: { id }, relations: ['product'] });
+      const saller = await this.sallerRepository.findOne({ where: { id }, relations: ['products'] });
       if (!saller) throw new NotFoundException(`Sotuvchi topilmadi: ${id}`);
       return saller;
     } catch (error) {
