@@ -59,10 +59,10 @@ export class SallerService {
       }
 
       const saller = await queryRunner.manager.findOne(Saller, {
-        where: { id: dto.sallerId },
+        where: { id },
       });
       if (!saller) {
-        throw new NotFoundException(`Sotuvchi topilmadi: ID ${dto.sallerId}`);
+        throw new NotFoundException(`Sotuvchi topilmadi: ID ${id}`);
       }
 
       if (dto.stock <= 0) {

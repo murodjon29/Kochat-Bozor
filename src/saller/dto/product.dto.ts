@@ -25,10 +25,6 @@ export class CreateProductDto {
   @Type(() => Number)
   age: number;
 
-  @IsNumber()
-  @Type(() => Number)
-  sallerId: number;
-
   @IsString()
   region: string;
 
