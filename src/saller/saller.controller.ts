@@ -86,10 +86,11 @@ export class SallerController {
   async createProduct(
     @Body() dto: CreateProductDto,
     @UploadedFiles() files: Express.Multer.File[],
+    @Req() req: MyRequest
   ) {
     if (!files || files.length === 0)
       throw new BadRequestException('No files uploaded');
-    return await this.sallerService.createProduct(dto, files);
+    return await this.sallerService.createProduct(dto, files, req.user.id);
   }
 
 

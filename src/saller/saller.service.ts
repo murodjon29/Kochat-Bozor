@@ -43,6 +43,7 @@ export class SallerService {
   async createProduct(
     dto: CreateProductDto,
     files: Express.Multer.File[],
+    id: number
   ): Promise<Object> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
