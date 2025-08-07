@@ -292,7 +292,7 @@ export class UserService {
 
   async findAllUser(): Promise<User[]> {
     try {
-      const users = await this.userRepository.find({relations: ['like', 'order']});
+      const users = await this.userRepository.find({relations: ['likes', 'order']});
       if (!users || users.length === 0) {
         console.log('Ma\'lumotlar bazasida foydalanuvchilar topilmadi');
       }
@@ -307,7 +307,7 @@ export class UserService {
   async findById(id: number): Promise<User> {
     try {
       if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
-      const user = await this.userRepository.findOne({ where: { id }, relations:  ['like', 'order'] });
+      const user = await this.userRepository.findOne({ where: { id }, relations:  ['likes', 'order'] });
       if (!user) throw new NotFoundException(`Foydalanuvchi topilmadi: ${id}`);
       return user;
     } catch (error) {
