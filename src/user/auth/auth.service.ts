@@ -11,11 +11,11 @@ import { JwtService } from '@nestjs/jwt';
 import { OTPService } from 'src/utils/otp/otp.service';
 import { Role } from 'src/utils/enum';
 import { ConfigService } from '@nestjs/config';
+import { ResetPasswordDto } from './dto/reset-password';
 
 interface UserLoginDto {
   email: string;
   password: string;
-  otp?: string;
 }
 
 @Injectable()
@@ -27,32 +27,29 @@ export class UserAuthService {
     private configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(email: string, password: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { email: email.toLowerCase() },
     });
     if (!user) throw new UnauthorizedException('Email mavjud emas');
+
     const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) throw new UnauthorizedException('Notogri malumotlar');
-    return {
-      id: user.id,
-      email: user.email,
-      role: user.role || Role.USER,
-      accountStatus: user.accountStatus,
-    };
+    if (!passwordMatch)
+      throw new UnauthorizedException('Noto‘g‘ri ma’lumotlar');
+
+    return user;
   }
 
   async login(dto: UserLoginDto) {
-    const { email, password, otp } = dto;
+    const { email, password } = dto;
     const user = await this.validateUser(email, password);
 
     if (user.accountStatus === 'unverified') {
-      if (!otp) {
-        return {
-          message: 'Hisobingiz tasdiqlanmagan. Iltimos, OTP kodini kiriting',
-        };
-      }
-      await this.verifyToken(user.id, otp);
+      return {
+        message:
+          'Hisobingiz tasdiqlanmagan. Iltimos, confirm-signin orqali kodni tasdiqlang.',
+        email: user.email,
+      };
     }
 
     const payload = {
@@ -60,7 +57,7 @@ export class UserAuthService {
       email: user.email,
       role: user.role || Role.USER,
     };
-    console.log('User JWT payload:', payload); // Debug uchun
+
     return {
       access_token: this.jwtService.sign(payload, {
         secret: this.configService.get<string>('JWT_SECRET'),
@@ -72,29 +69,60 @@ export class UserAuthService {
     };
   }
 
-  async verifyToken(userId: number, token: string) {
+  async confirmSignin(email: string, otp: string) {
     try {
-      await this.otpService.validateUserOTP(userId, token);
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-      if (!user) throw new UnauthorizedException('Foydalanuvchi topilmadi');
+      const user = await this.userRepository.findOne({
+        where: { email: email.toLowerCase() },
+      });
+
+      if (!user) throw new UnauthorizedException('Email topilmadi');
+
+      await this.otpService.validateUserOTP(user.id, otp);
+
       user.accountStatus = 'verified';
       await this.userRepository.save(user);
-      console.log(`User ${userId} verified successfully`);
+
+      const payload = {
+        id: user.id,
+        email: user.email,
+        role: user.role || Role.USER,
+      };
+
+      const token = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: '1h',
+      });
+
+      return {
+        message: 'Hisobingiz muvaffaqiyatli tasdiqlandi.',
+        access_token: token,
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      };
     } catch (error) {
       throw new BadRequestException(`OTP tasdiqlashda xato: ${error.message}`);
     }
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<string> {
+  async resetPassword(dto: ResetPasswordDto): Promise<string> {
     try {
+      const { token, newPassword } = dto;
       const { id: userId } = await this.otpService.validateResetPassword(token);
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
       if (!user) throw new BadRequestException('Foydalanuvchi topilmadi');
+
       user.password = await bcrypt.hash(newPassword, 10);
       await this.userRepository.save(user);
+
       return 'Parol muvaffaqiyatli tiklandi';
     } catch (error) {
-      throw new BadRequestException(`Parolni tiklashda xato: ${error.message}`);
+      throw new BadRequestException(
+        `Parolni tiklashda xato: ${error.message}`,
+      );
     }
   }
 }

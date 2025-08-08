@@ -1,11 +1,5 @@
 import { BaseDatabase } from 'src/utils/database/base-database.ts';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { ProductImage } from './image.entitiy';
 import { Saller } from './saller.entity';
 import { Category } from 'src/category/entities/category.entity';
@@ -25,10 +19,10 @@ export class Product extends BaseDatabase {
   @Column()
   stock: number;
 
-  @Column({type: 'float'})
+  @Column({ type: 'float' })
   height: number;
 
-  @Column({type: 'float'})
+  @Column({ type: 'float' })
   age: number;
 
   @Column()
@@ -40,7 +34,10 @@ export class Product extends BaseDatabase {
   })
   images: ProductImage[];
 
-  @ManyToOne(() => Saller, (saller) => saller.products)
+  @ManyToOne(() => Saller, (saller) => saller.products, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'sallerId' })
   saller: Saller;
 

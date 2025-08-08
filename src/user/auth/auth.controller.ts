@@ -4,6 +4,7 @@ import {
   Get,
   NotFoundException,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -11,6 +12,8 @@ import { UserAuthService } from './auth.service';
 import { UserService } from '../user.service';
 import { UserLoginDto } from './dto/user-login.dto';
 import { JwtAuthGuard } from '../../utils/guard/jwt-auth.guard';
+import { ConfirmSigninDto } from 'src/saller/auth/dto/confirim-signin.dto';
+import { ResetPasswordDto } from './dto/reset-password';
 
 @Controller('auth/user')
 export class UserAuthController {
@@ -24,11 +27,14 @@ export class UserAuthController {
     return this.authService.login(dto);
   }
 
+  @Post('confirm-signin')
+  async confirmSignin(@Body() dto: ConfirmSigninDto) {
+    return this.authService.confirmSignin(dto.email, dto.otp);
+  }
+
   @Post('reset-password')
-  async resetPassword(
-    @Body() { token, password }: { token: string; password: string },
-  ) {
-    return this.authService.resetPassword(token, password);
+  async resetPassword(@Query() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @UseGuards(JwtAuthGuard)

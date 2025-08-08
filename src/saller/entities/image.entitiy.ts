@@ -4,7 +4,10 @@ import { BaseDatabase } from 'src/utils/database/base-database.ts';
 
 @Entity('product_image')
 export class ProductImage extends BaseDatabase {
-  @ManyToOne(() => Product, (product) => product.images)
+  @ManyToOne(() => Product, (product) => product.images, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'product_id' })
   product: Product;
 

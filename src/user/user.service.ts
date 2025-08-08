@@ -109,7 +109,6 @@ export class UserService {
         sortOrder = 'DESC',
       } = query;
 
-      // Parametrlarni validatsiya qilish
       const pageNum = parseInt(page, 10) || 1;
       const limitNum = parseInt(limit, 10) || 10;
       if (pageNum < 1 || limitNum < 1) {
@@ -117,14 +116,13 @@ export class UserService {
       }
       const skip = (pageNum - 1) * limitNum;
 
-      // QueryBuilder ni boshlash
       const queryBuilder = this.productRepository
         .createQueryBuilder('product')
         .leftJoinAndSelect('product.images', 'images')
         .leftJoinAndSelect('product.saller', 'saller')
         .leftJoinAndSelect('product.category', 'category');
 
-      // `search` bo‘yicha filtr (faqat `name` maydonida)
+
       if (search && typeof search === 'string' && search.trim().length > 0) {
         queryBuilder.andWhere('product.name ILIKE :search', {
           search: `%${search.trim()}%`,
@@ -136,7 +134,7 @@ export class UserService {
       }
 
 
-      // Narx bo‘yicha filtrlar
+
       if (minPrice) {
         const minPriceValue = parseFloat(minPrice);
         if (isNaN(minPriceValue) || minPriceValue < 0) {
@@ -156,8 +154,6 @@ export class UserService {
           maxPrice: maxPriceValue,
         });
       }
-
-      // Kategoriya bo‘yicha filtr
       if (categoryId) {
         const categoryIdValue = parseInt(categoryId, 10);
         if (isNaN(categoryIdValue)) {
@@ -173,14 +169,12 @@ export class UserService {
       }
 
 
-      // Hudud bo‘yicha filtr
       if (region && typeof region === 'string' && region.trim().length > 0) {
         queryBuilder.andWhere('product.region = :region', {
           region: region.trim(),
         });
       }
 
-      // Yetkazib berish xizmati bo‘yicha filtr
       if (deliveryService) {
         const deliveryServiceValue = deliveryService === 'true' || deliveryService === true;
         queryBuilder.andWhere('product.deliveryService = :deliveryService', {
@@ -188,7 +182,6 @@ export class UserService {
         });
       }
 
-      // Balandlik bo‘yicha filtrlar
       if (minHeight) {
         const minHeightValue = parseFloat(minHeight);
         if (isNaN(minHeightValue) || minHeightValue < 0) {
@@ -209,7 +202,6 @@ export class UserService {
         });
       }
 
-      // Yosh bo‘yicha filtrlar
       if (minAge) {
         const minAgeValue = parseInt(minAge, 10);
         if (isNaN(minAgeValue) || minAgeValue < 0) {
@@ -230,7 +222,6 @@ export class UserService {
         });
       }
 
-      // Saralash
       const validSortFields = ['createdAt', 'price', 'name', 'age', 'height'];
       if (!validSortFields.includes(sortBy)) {
         throw new BadRequestException('Noto‘g‘ri saralash maydoni');
@@ -241,14 +232,8 @@ export class UserService {
         throw new BadRequestException('Noto‘g‘ri saralash tartibi');
       }
       queryBuilder.orderBy(`product.${sortBy}`, normalizedSortOrder);
-
-      // Sahifalash
       queryBuilder.skip(skip).take(limitNum);
-
-      // Natijalarni olish
       const [products, total] = await queryBuilder.getManyAndCount();
-
-      // Agar hech qanday mahsulot topilmasa
       if (!products || products.length === 0) {
         return {
           data: [],

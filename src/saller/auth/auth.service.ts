@@ -11,11 +11,11 @@ import { JwtService } from '@nestjs/jwt';
 import { OTPService } from 'src/utils/otp/otp.service';
 import { Role } from 'src/utils/enum';
 import { ConfigService } from '@nestjs/config';
+import { ConfirmSigninDto } from './dto/confirim-signin.dto';
 
 interface SallerLoginDto {
   email: string;
   password: string;
-  otp?: string;
 }
 
 @Injectable()
@@ -26,34 +26,33 @@ export class SallerAuthService {
     private otpService: OTPService,
     private configService: ConfigService,
   ) {}
-
-  async validateSaller(email: string, password: string): Promise<any> {
+  async validateSaller(email: string, password: string): Promise<Saller> {
     const saller = await this.sallerRepository.findOne({
       where: { email: email.toLowerCase() },
     });
-    if (!saller) throw new UnauthorizedException('Email mavjud emas');
-    const passwordMatch = await bcrypt.compare(password, saller.password);
-    if (!passwordMatch)
+
+    if (!saller) {
+      throw new UnauthorizedException('Email mavjud emas');
+    }
+
+    const isMatch = await bcrypt.compare(password, saller.password);
+    if (!isMatch) {
       throw new UnauthorizedException('Noto‘g‘ri ma’lumotlar');
-    return {
-      id: saller.id,
-      email: saller.email,
-      role: saller.role || Role.SALLER,
-      accountStatus: saller.accountStatus,
-    };
+    }
+
+    return saller;
   }
 
   async login(dto: SallerLoginDto) {
-    const { email, password, otp } = dto;
+    const { email, password } = dto;
     const saller = await this.validateSaller(email, password);
 
     if (saller.accountStatus === 'unverified') {
-      if (!otp) {
-        return {
-          message: 'Hisobingiz tasdiqlanmagan. Iltimos, codeni kodini kiriting',
-        };
-      }
-      await this.verifyToken(saller.id, otp);
+      return {
+        message:
+          'Hisobingiz tasdiqlanmagan. Iltimos, hisobni email orqali tasdiqlang.',
+        email: saller.email,
+      };
     }
 
     const payload = {
@@ -61,7 +60,7 @@ export class SallerAuthService {
       email: saller.email,
       role: saller.role || Role.SALLER,
     };
-    console.log('Saller JWT payload:', payload);
+
     return {
       access_token: this.jwtService.sign(payload, {
         secret: this.configService.get<string>('JWT_SECRET'),
@@ -72,35 +71,67 @@ export class SallerAuthService {
       role: saller.role,
     };
   }
-
-  async verifyToken(sallerId: number, token: string) {
+  async confirmSignin(confirmSigninDto: ConfirmSigninDto) {
     try {
-      await this.otpService.validateSallerOTP(sallerId, token);
+      const { email, otp } = confirmSigninDto;
       const saller = await this.sallerRepository.findOne({
-        where: { id: sallerId },
+        where: { email: email.toLowerCase() },
       });
-      if (!saller) throw new UnauthorizedException('Sotuvchi topilmadi');
+
+      if (!saller) {
+        throw new UnauthorizedException('Email topilmadi');
+      }
+
+      await this.otpService.validateSallerOTP(saller.id, otp);
+
       saller.accountStatus = 'verified';
       await this.sallerRepository.save(saller);
-      console.log(`Saller ${sallerId} verified successfully`);
+
+      const payload = {
+        id: saller.id,
+        email: saller.email,
+        role: saller.role || Role.SALLER,
+      };
+
+      const token = this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: '1h',
+      });
+
+      return {
+        message: 'Hisobingiz muvaffaqiyatli tasdiqlandi.',
+        access_token: token,
+        userId: saller.id,
+        email: saller.email,
+        role: saller.role,
+      };
     } catch (error) {
-      throw new BadRequestException(`OTP tasdiqlashda xato: ${error.message}`);
+      throw new BadRequestException(`Tasdiqlashda xato: ${error.message}`);
     }
   }
 
   async resetPassword(token: string, newPassword: string): Promise<string> {
     try {
-      const { id: sallerId } =
-      await this.otpService.validateResetPassword(token);
+      const { id: sallerId } = await this.otpService.validateResetPassword(
+        token,
+      );
+
       const saller = await this.sallerRepository.findOne({
         where: { id: sallerId },
       });
-      if (!saller) throw new BadRequestException('Sotuvchi topilmadi');
+
+      if (!saller) {
+        throw new BadRequestException('Sotuvchi topilmadi');
+      }
+
       saller.password = await bcrypt.hash(newPassword, 10);
       await this.sallerRepository.save(saller);
+
       return 'Parol muvaffaqiyatli tiklandi';
     } catch (error) {
-      throw new BadRequestException(`Parolni tiklashda xato: ${error.message}`);
+      throw new BadRequestException(
+        `Parolni tiklashda xato: ${error.message}`,
+      );
     }
   }
 }

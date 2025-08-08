@@ -12,6 +12,7 @@ import { SallerService } from '../saller.service';
 import { SallerLoginDto } from './dto/saller-login.dto';
 import { JwtAuthGuard } from 'src/utils/guard/jwt-auth.guard';
 import { SelfGuard } from 'src/utils/guard/self.guard';
+import { ConfirmSigninDto } from './dto/confirim-signin.dto';
 
 @Controller('auth/saller')
 export class SallerAuthController {
@@ -23,6 +24,13 @@ export class SallerAuthController {
   @Post('login')
   async login(@Body() dto: SallerLoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('confirm-signin')
+  async confirmSignin(
+    @Body() body: ConfirmSigninDto,
+  ) {
+    return this.authService.confirmSignin(body);
   }
 
   @Post('reset-password')

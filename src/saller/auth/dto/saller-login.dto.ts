@@ -7,7 +7,4 @@ export class SallerLoginDto {
   @IsString()
   password: string;
 
-  @IsOptional()
-  @IsString()
-  otp?: string;
 }
