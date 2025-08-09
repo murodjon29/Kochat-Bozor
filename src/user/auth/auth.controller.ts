@@ -14,11 +14,12 @@ import { UserLoginDto } from './dto/user-login.dto';
 import { JwtAuthGuard } from '../../utils/guard/jwt-auth.guard';
 import { ConfirmSigninDto } from 'src/saller/auth/dto/confirim-signin.dto';
 import { ResetPasswordDto } from './dto/reset-password';
+
 @Controller('auth/user')
 export class UserAuthController {
   constructor(
-    private readonly authService: UserAuthService,
-    private readonly userService: UserService,
+    private authService: UserAuthService,
+    private userService: UserService,
   ) {}
 
   @Post('login')
@@ -31,23 +32,16 @@ export class UserAuthController {
     return this.authService.confirmSignin(dto.email, dto.otp);
   }
 
-  @Post('forgot-password')
-  async forgotPassword(@Body() email: string ) {
+   @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);
   }
 
-  @Post('reset-password-by-otp')
-  async resetPasswordByOtp(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(
-      dto.email,
-      dto.otp,
-      dto.newPassword,
-    );
-  }
-
   @Post('reset-password')
-  async resetPassword(@Body() dto: ResetPasswordDto) {
-    return this.authService.resetPassword(dto.email, dto.newPassword, dto.otp);
+  async resetPassword(
+    @Body() body: { email: string; otp: string; password: string },
+  ) {
+    return this.authService.resetPassword(body.email, body.otp, body.password);
   }
 
   @UseGuards(JwtAuthGuard)

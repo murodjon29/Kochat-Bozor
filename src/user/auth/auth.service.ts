@@ -109,11 +109,10 @@ export class UserAuthService {
     }
   }
 
-  async forgotPassword(email: string) {
-
-      // email.toLowerCase()
+  
+    async forgotPassword(email: string) {
       const user = await this.userRepository.findOne({
-        where: { email },
+        where: { email: email.toLowerCase() },
       });
   
       if (!user) throw new NotFoundException('Email topilmadi');
@@ -127,11 +126,10 @@ export class UserAuthService {
       })
       return { message: 'OTP emailga yuborildi', otp: process.env.NODE_ENV === 'dev' ? otp : undefined }
     }
-
-  async resetPassword(email: string, otp: string, newPassword: string) {
-    email.toLowerCase()  
-    const user = await this.userRepository.findOne({
-        where: { email:  email},
+  
+    async resetPassword(email: string, otp: string, newPassword: string) {
+      const user = await this.userRepository.findOne({
+        where: { email: email.toLowerCase() },
       });
   
       if (!user) throw new NotFoundException('Email topilmadi');
