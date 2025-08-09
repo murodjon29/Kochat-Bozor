@@ -71,7 +71,7 @@ export class AdminService implements OnModuleInit {
     } catch (error) {
       throw new InternalServerErrorException(
         `Error finding user: ${error.message}`,
-      )
+      );
     }
   }
 
@@ -83,7 +83,7 @@ export class AdminService implements OnModuleInit {
     } catch (error) {
       throw new InternalServerErrorException(
         `Error finding saller: ${error.message}`,
-      )
+      );
     }
   }
 
@@ -210,35 +210,34 @@ export class AdminService implements OnModuleInit {
   }
 
   async deleteProduct(id: number): Promise<{ message: string }> {
-      const queryRunner = this.dataSource.createQueryRunner();
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
-      try {
-        if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri mahsulot ID');
-        const product = await this.productRepository.findOne({
-          where: { id },
-          relations: ['images'],
-        });
-        if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
-        if (product.images && product.images.length > 0) {
-          for (const image of product.images) {
-            await this.fileService.deleteFile(image.ImageUrl);
-            await queryRunner.manager.delete(ProductImage, image.id);
-          }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri mahsulot ID');
+      const product = await this.productRepository.findOne({
+        where: { id },
+        relations: ['images'],
+      });
+      if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
+      if (product.images && product.images.length > 0) {
+        for (const image of product.images) {
+          await this.fileService.deleteFile(image.ImageUrl);
+          await queryRunner.manager.delete(ProductImage, image.id);
         }
-        await queryRunner.manager.delete(Product, id);
-        await queryRunner.commitTransaction();
-        return { message: 'Mahsulot muvaffaqiyatli o‘chirildi' };
-      } catch (error) {
-        await queryRunner.rollbackTransaction();
-        throw new InternalServerErrorException(
-          `Mahsulot o‘chirishda xato: ${error.message}`,
-        );
-      } finally {
-        await queryRunner.release();
       }
+      await queryRunner.manager.delete(Product, id);
+      await queryRunner.commitTransaction();
+      return { message: 'Mahsulot muvaffaqiyatli o‘chirildi' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        `Mahsulot o‘chirishda xato: ${error.message}`,
+      );
+    } finally {
+      await queryRunner.release();
     }
-  
+  }
 
   async deleteSaller(id: number) {
     try {

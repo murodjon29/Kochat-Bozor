@@ -29,7 +29,7 @@ import { UpdateSallerDto } from './dto/update-saller.dto';
 import { Request } from 'express';
 
 export interface MyRequest extends Request {
-  user: any
+  user: any;
 }
 
 @Controller('saller')
@@ -70,7 +70,7 @@ export class SallerController {
   }
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Get('my-products')
-  async getProduct(@Req() req: MyRequest ) {
+  async getProduct(@Req() req: MyRequest) {
     return await this.sallerService.myProducts(req.user.id);
   }
 
@@ -86,13 +86,12 @@ export class SallerController {
   async createProduct(
     @Body() dto: CreateProductDto,
     @UploadedFiles() files: Express.Multer.File[],
-    @Req() req: MyRequest
+    @Req() req: MyRequest,
   ) {
     if (!files || files.length === 0)
       throw new BadRequestException('No files uploaded');
     return await this.sallerService.createProduct(dto, files, req.user.id);
   }
-
 
   @UseGuards(JwtAuthGuard, SelfGuard)
   @Get()
@@ -120,7 +119,6 @@ export class SallerController {
     if (isNaN(id)) throw new BadRequestException('Invalid saller ID');
     return await this.sallerService.deleteAccount(id);
   }
-
 
   @UseInterceptors(FilesInterceptor('images'))
   @Patch('product/:id')

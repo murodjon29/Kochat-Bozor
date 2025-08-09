@@ -15,8 +15,9 @@ import { UserService } from 'src/user/user.service';
 
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService,
-    private readonly userSerive: UserService
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly userSerive: UserService,
   ) {}
 
   // @Post('register')
@@ -53,7 +54,7 @@ export class AdminController {
   @Post('create-saller')
   async createSaller(@Body() dto: CreateSallerDto) {
     console.log(dto);
-    
+
     return await this.adminService.createSaller(dto);
   }
 

@@ -32,7 +32,7 @@ export class UserAuthController {
     return this.authService.confirmSignin(dto.email, dto.otp);
   }
 
-   @Post('forgot-password')
+  @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);
   }

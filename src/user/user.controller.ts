@@ -42,7 +42,10 @@ export class UserController {
   @Post('register')
   async register(@Body() userDto: UserDto) {
     await this.userService.register(userDto);
-    return { message: 'Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi va OTP emailga yuborildi' };
+    return {
+      message:
+        'Foydalanuvchi muvaffaqiyatli ro‘yxatdan o‘tdi va OTP emailga yuborildi',
+    };
   }
 
   @Post('request-otp')
@@ -52,7 +55,7 @@ export class UserController {
     await this.userService.emailVerification(user, OTPType.OTP);
     return { message: 'OTP muvaffaqiyatli yuborildi. Emailingizni tekshiring' };
   }
-  
+
   @Post('forgot-password')
   async forgotPassword(@Body() dto: RequestTokenDto) {
     const normalizedEmail = dto.email.toLowerCase();
@@ -67,7 +70,6 @@ export class UserController {
   async getAllProduct(@Query() query: any) {
     return await this.userService.getFilter(query);
   }
-
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @CheckRoles(Role.ADMIN, Role.SUPERADMIN)

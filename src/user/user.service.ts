@@ -37,7 +37,8 @@ export class UserService {
       const existingUser = await this.userRepository.findOne({
         where: { email: normalizedEmail },
       });
-      if (existingUser) throw new BadRequestException('Email allaqachon mavjud');
+      if (existingUser)
+        throw new BadRequestException('Email allaqachon mavjud');
       const existingPhoneUser = await this.userRepository.findOne({
         where: { phone },
       });
@@ -122,7 +123,6 @@ export class UserService {
         .leftJoinAndSelect('product.saller', 'saller')
         .leftJoinAndSelect('product.category', 'category');
 
-
       if (search && typeof search === 'string' && search.trim().length > 0) {
         queryBuilder.andWhere('product.name ILIKE :search', {
           search: `%${search.trim()}%`,
@@ -130,10 +130,8 @@ export class UserService {
       }
 
       if (nomi) {
-        queryBuilder.andWhere('product.name ILIKE :name', {name: nomi})
+        queryBuilder.andWhere('product.name ILIKE :name', { name: nomi });
       }
-
-
 
       if (minPrice) {
         const minPriceValue = parseFloat(minPrice);
@@ -165,9 +163,8 @@ export class UserService {
       }
 
       if (name) {
-        queryBuilder.andWhere('product.name = :name', {name: name})
+        queryBuilder.andWhere('product.name = :name', { name: name });
       }
-
 
       if (region && typeof region === 'string' && region.trim().length > 0) {
         queryBuilder.andWhere('product.region = :region', {
@@ -176,7 +173,8 @@ export class UserService {
       }
 
       if (deliveryService) {
-        const deliveryServiceValue = deliveryService === 'true' || deliveryService === true;
+        const deliveryServiceValue =
+          deliveryService === 'true' || deliveryService === true;
         queryBuilder.andWhere('product.deliveryService = :deliveryService', {
           deliveryService: deliveryServiceValue,
         });
@@ -277,9 +275,11 @@ export class UserService {
 
   async findAllUser(): Promise<User[]> {
     try {
-      const users = await this.userRepository.find({relations: ['likes', 'orders']});
+      const users = await this.userRepository.find({
+        relations: ['likes', 'orders'],
+      });
       if (!users || users.length === 0) {
-        console.log('Ma\'lumotlar bazasida foydalanuvchilar topilmadi');
+        console.log("Ma'lumotlar bazasida foydalanuvchilar topilmadi");
       }
       return users;
     } catch (error) {
@@ -291,8 +291,12 @@ export class UserService {
 
   async findById(id: number): Promise<User> {
     try {
-      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
-      const user = await this.userRepository.findOne({ where: { id }, relations:  ['likes', 'orders'] });
+      if (isNaN(id))
+        throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
+      const user = await this.userRepository.findOne({
+        where: { id },
+        relations: ['likes', 'orders'],
+      });
       if (!user) throw new NotFoundException(`Foydalanuvchi topilmadi: ${id}`);
       return user;
     } catch (error) {
@@ -304,7 +308,8 @@ export class UserService {
 
   async updateProfile(id: number, data: Partial<User>): Promise<User> {
     try {
-      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
+      if (isNaN(id))
+        throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
       const user = await this.userRepository.findOne({ where: { id } });
       if (!user) throw new NotFoundException(`Foydalanuvchi topilmadi: ${id}`);
       if (
@@ -328,7 +333,10 @@ export class UserService {
         );
       }
       await this.userRepository.update(id, data);
-      return await this.userRepository.findOne({ where: { id } , relations: ['likes', 'orders'] });
+      return await this.userRepository.findOne({
+        where: { id },
+        relations: ['likes', 'orders'],
+      });
     } catch (error) {
       throw new InternalServerErrorException(
         `Foydalanuvchi profilini yangilashda xato: ${error.message}`,
@@ -338,7 +346,8 @@ export class UserService {
 
   async deleteAccount(id: number): Promise<{ message: string }> {
     try {
-      if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
+      if (isNaN(id))
+        throw new BadRequestException('Noto‘g‘ri foydalanuvchi ID');
       const user = await this.userRepository.findOne({ where: { id } });
       if (!user) throw new NotFoundException(`Foydalanuvchi topilmadi: ${id}`);
       await this.userRepository.delete(id);
@@ -354,28 +363,28 @@ export class UserService {
     try {
       const orders = await this.orderRepository.find({
         where: { user: { id } },
-        relations: ['product', ],
-      })
+        relations: ['product'],
+      });
       if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
-      return orders
+      return orders;
     } catch (error) {
       throw new InternalServerErrorException(
         `Mahsulot olishda xato: ${error.message}`,
-      )
+      );
     }
   }
 
-  async myFavotirites (id: number) {
+  async myFavotirites(id: number) {
     try {
       const favorite = await this.likeRepository.find({
         where: { user: { id } },
         relations: ['product', 'user'],
-      })
-      return favorite
+      });
+      return favorite;
     } catch (error) {
       throw new InternalServerErrorException(
         `Mahsulot olishda xato: ${error.message}`,
-      )
+      );
     }
   }
 }

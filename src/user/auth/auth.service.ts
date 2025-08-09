@@ -109,37 +109,42 @@ export class UserAuthService {
     }
   }
 
-  
-    async forgotPassword(email: string) {
-      const user = await this.userRepository.findOne({
-        where: { email: email.toLowerCase() },
-      });
-  
-      if (!user) throw new NotFoundException('Email topilmadi');
-  
-      const otp = await this.otpService.generateTokenForUser(user.id, OTPType.OTP);
-  
-      await this.emailService.sendEmail({
-        subject: 'Parolni tiklash',
-        recipients: [user.email],
-        html: `Parolingizni tiklash uchun quyidagi code dan foydalaning: <strong>${otp}</strong>`,
-      })
-      return { message: 'OTP emailga yuborildi', otp: process.env.NODE_ENV === 'dev' ? otp : undefined }
-    }
-  
-    async resetPassword(email: string, otp: string, newPassword: string) {
-      const user = await this.userRepository.findOne({
-        where: { email: email.toLowerCase() },
-      });
-  
-      if (!user) throw new NotFoundException('Email topilmadi');
-  
-      const isValid = await this.otpService.validateUserOTP(user.id, otp);
-      if (!isValid) throw new BadRequestException('Noto‘g‘ri yoki eskirgan OTP');
-  
-      user.password = await bcrypt.hash(newPassword, 10);
-      await this.userRepository.save(user);
-  
-      return { message: 'Parol muvaffaqiyatli yangilandi' };
-    }
+  async forgotPassword(email: string) {
+    const user = await this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) throw new NotFoundException('Email topilmadi');
+
+    const otp = await this.otpService.generateTokenForUser(
+      user.id,
+      OTPType.OTP,
+    );
+
+    await this.emailService.sendEmail({
+      subject: 'Parolni tiklash',
+      recipients: [user.email],
+      html: `Parolingizni tiklash uchun quyidagi code dan foydalaning: <strong>${otp}</strong>`,
+    });
+    return {
+      message: 'OTP emailga yuborildi',
+      otp: process.env.NODE_ENV === 'dev' ? otp : undefined,
+    };
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    const user = await this.userRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) throw new NotFoundException('Email topilmadi');
+
+    const isValid = await this.otpService.validateUserOTP(user.id, otp);
+    if (!isValid) throw new BadRequestException('Noto‘g‘ri yoki eskirgan OTP');
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await this.userRepository.save(user);
+
+    return { message: 'Parol muvaffaqiyatli yangilandi' };
+  }
 }

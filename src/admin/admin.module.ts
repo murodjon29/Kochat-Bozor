@@ -22,7 +22,15 @@ import { Like } from 'src/like/entities/like.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin, User, Saller, Product, ProductImage, Order, Like]),
+    TypeOrmModule.forFeature([
+      Admin,
+      User,
+      Saller,
+      Product,
+      ProductImage,
+      Order,
+      Like,
+    ]),
     forwardRef(() => AdminAuthModule),
     OTPModule,
     CategoryModule,

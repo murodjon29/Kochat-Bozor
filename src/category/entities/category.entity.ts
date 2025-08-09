@@ -7,6 +7,9 @@ export class Category extends BaseDatabase {
   @Column()
   name: string;
 
-  @OneToMany(() => Product, (product) => product.category,  {onDelete: 'CASCADE', onUpdate: 'CASCADE',})
+  @OneToMany(() => Product, (product) => product.category, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   products: Product[];
 }

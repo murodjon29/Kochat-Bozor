@@ -43,7 +43,7 @@ export class SallerService {
   async createProduct(
     dto: CreateProductDto,
     files: Express.Multer.File[],
-    id: number
+    id: number,
   ): Promise<Object> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -73,10 +73,9 @@ export class SallerService {
       const product = queryRunner.manager.create(Product, {
         ...dto,
         name: dto.name.trim(),
-        saller, 
-        category, 
+        saller,
+        category,
       });
-
 
       await queryRunner.manager.save(Product, product);
       if (files && files.length > 0) {
@@ -188,7 +187,9 @@ export class SallerService {
 
   async findAllSallers(): Promise<Saller[]> {
     try {
-      const sallers = await this.sallerRepository.find({ relations: ['products'] });
+      const sallers = await this.sallerRepository.find({
+        relations: ['products'],
+      });
       if (!sallers || sallers.length === 0) {
         console.log("Ma'lumotlar bazasida sotuvchilar topilmadi");
       }
@@ -203,7 +204,10 @@ export class SallerService {
   async findById(id: number): Promise<Saller> {
     try {
       if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri sotuvchi ID');
-      const saller = await this.sallerRepository.findOne({ where: { id }, relations: ['products'] });
+      const saller = await this.sallerRepository.findOne({
+        where: { id },
+        relations: ['products'],
+      });
       if (!saller) throw new NotFoundException(`Sotuvchi topilmadi: ${id}`);
       return saller;
     } catch (error) {
@@ -242,14 +246,16 @@ export class SallerService {
         );
       }
       await this.sallerRepository.update(id, data);
-      return await this.sallerRepository.findOne({ where: { id },  relations: ['products'] });
+      return await this.sallerRepository.findOne({
+        where: { id },
+        relations: ['products'],
+      });
     } catch (error) {
       throw new InternalServerErrorException(
         `Sotuvchi profilini yangilashda xato: ${error.message}`,
       );
-    };
+    }
   }
-  
 
   async deleteAccount(id: number): Promise<{ message: string }> {
     try {
@@ -270,7 +276,7 @@ export class SallerService {
       if (isNaN(id)) throw new BadRequestException('Noto‘g‘ri mahsulot ID');
       const product = await this.productRepository.find({
         where: { saller: { id } },
-        relations: ['images', 'saller',  'category'],
+        relations: ['images', 'saller', 'category'],
       });
       if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
       return product;
@@ -286,13 +292,13 @@ export class SallerService {
       const orders = await this.orderRepository.find({
         where: { user: { id } },
         relations: ['product', 'user'],
-      })
+      });
       if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
-      return orders
+      return orders;
     } catch (error) {
       throw new InternalServerErrorException(
         `Mahsulot olishda xato: ${error.message}`,
-      )
+      );
     }
   }
 
@@ -317,74 +323,73 @@ export class SallerService {
   }
 
   async updateProduct(
-  id: number,
-  dto: UpdateDto,
-  files: Express.Multer.File[],
-): Promise<Product> {
-  const queryRunner = this.dataSource.createQueryRunner();
-  await queryRunner.connect();
-  await queryRunner.startTransaction();
-  try {
-    const { categoryId } = dto;
-    const category = await queryRunner.manager.findOne(Category, {
-      where: { id: categoryId },
-    });
-    if (dto.categoryId && !category)
-      throw new BadRequestException('Kategoriya topilmadi');
-    if (dto.stock <= 0)
-      throw new BadRequestException(
-        'Zaxira miqdori 0 dan katta bo‘lishi kerak',
-      );
+    id: number,
+    dto: UpdateDto,
+    files: Express.Multer.File[],
+  ): Promise<Product> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const { categoryId } = dto;
+      const category = await queryRunner.manager.findOne(Category, {
+        where: { id: categoryId },
+      });
+      if (dto.categoryId && !category)
+        throw new BadRequestException('Kategoriya topilmadi');
+      if (dto.stock <= 0)
+        throw new BadRequestException(
+          'Zaxira miqdori 0 dan katta bo‘lishi kerak',
+        );
 
-    const product = await this.productRepository.findOne({
-      where: { id },
-      relations: ['images'],
-    });
-    if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
+      const product = await this.productRepository.findOne({
+        where: { id },
+        relations: ['images'],
+      });
+      if (!product) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
 
-    Object.assign(product, { ...dto, category });
-    await queryRunner.manager.save(product);
-
-    if (files && files.length > 0) {
-      if (product.images && product.images.length > 0) {
-        for (const image of product.images) {
-          await this.fileService.deleteFile(image.ImageUrl);
-          await queryRunner.manager.delete(ProductImage, image.id);
-        }
-      }
-      const productImages: ProductImage[] = [];
-      for (const file of files) {
-        const imagePath = await this.fileService.createFile(file);
-        const productImage = queryRunner.manager.create(ProductImage, {
-          product,
-          ImageUrl: imagePath,
-        });
-        await queryRunner.manager.save(productImage);
-        productImages.push(productImage);
-      }
-
-      product.images = productImages;
+      Object.assign(product, { ...dto, category });
       await queryRunner.manager.save(product);
+
+      if (files && files.length > 0) {
+        if (product.images && product.images.length > 0) {
+          for (const image of product.images) {
+            await this.fileService.deleteFile(image.ImageUrl);
+            await queryRunner.manager.delete(ProductImage, image.id);
+          }
+        }
+        const productImages: ProductImage[] = [];
+        for (const file of files) {
+          const imagePath = await this.fileService.createFile(file);
+          const productImage = queryRunner.manager.create(ProductImage, {
+            product,
+            ImageUrl: imagePath,
+          });
+          await queryRunner.manager.save(productImage);
+          productImages.push(productImage);
+        }
+
+        product.images = productImages;
+        await queryRunner.manager.save(product);
+      }
+
+      await queryRunner.commitTransaction();
+
+      const updatedProduct = await this.productRepository.findOne({
+        where: { id },
+        relations: ['images', 'saller', 'category'],
+      });
+
+      return updatedProduct;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        `Mahsulot yangilashda xato: ${error.message}`,
+      );
+    } finally {
+      await queryRunner.release();
     }
-
-    await queryRunner.commitTransaction();
-
-    const updatedProduct = await this.productRepository.findOne({
-      where: { id },
-      relations: ['images', 'saller', 'category'],
-    });
-
-    return updatedProduct;
-  } catch (error) {
-    await queryRunner.rollbackTransaction();
-    throw new InternalServerErrorException(
-      `Mahsulot yangilashda xato: ${error.message}`,
-    );
-  } finally {
-    await queryRunner.release();
   }
-}
-
 
   async deleteProduct(id: number): Promise<{ message: string }> {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -415,6 +420,4 @@ export class SallerService {
       await queryRunner.release();
     }
   }
-
-
 }

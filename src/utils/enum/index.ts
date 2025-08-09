@@ -5,9 +5,8 @@ export enum Role {
   SALLER = 'saller',
 }
 
-
 export enum ProductStatus {
-  PANDING='panding',
-  COMPLETED='completed',
-  CANCELLED='cancelled'
+  PANDING = 'panding',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
 }

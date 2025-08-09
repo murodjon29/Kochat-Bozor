@@ -1,42 +1,42 @@
-import { IsNumber, IsString } from "class-validator"
+import { IsNumber, IsString } from 'class-validator';
 
-export class FilterDto{
-        @IsNumber()
-        page: number
-        
-        @IsNumber()
-        limit: number
+export class FilterDto {
+  @IsNumber()
+  page: number;
 
-        @IsString()
-        name: string
+  @IsNumber()
+  limit: number;
 
-        @IsString()
-        search: string
+  @IsString()
+  name: string;
 
-        @IsNumber()
-        minPrice: number
+  @IsString()
+  search: string;
 
-        @IsNumber()
-        maxPrice: number
+  @IsNumber()
+  minPrice: number;
 
-        @IsNumber()
-        categoryId: number
+  @IsNumber()
+  maxPrice: number;
 
-        @IsString()
-        region: string
+  @IsNumber()
+  categoryId: number;
 
-        @IsString()
-        deliveryService: string
+  @IsString()
+  region: string;
 
-        @IsNumber()
-        minHeight: number
+  @IsString()
+  deliveryService: string;
 
-        @IsNumber()
-        maxHeight: number
+  @IsNumber()
+  minHeight: number;
 
-        @IsNumber()
-        minAge: number
+  @IsNumber()
+  maxHeight: number;
 
-        @IsNumber()
-        maxAge: number
+  @IsNumber()
+  minAge: number;
+
+  @IsNumber()
+  maxAge: number;
 }

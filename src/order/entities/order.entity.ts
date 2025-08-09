@@ -27,5 +27,5 @@ export class Order extends BaseDatabase {
   totalPrice: number;
 
   @Column({ default: ProductStatus.PANDING })
-  status: ProductStatus; 
+  status: ProductStatus;
 }

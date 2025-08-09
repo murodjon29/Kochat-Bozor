@@ -123,14 +123,20 @@ export class SallerAuthService {
 
     if (!saller) throw new NotFoundException('Email topilmadi');
 
-    const otp = await this.otpService.generateTokenForSaller(saller.id, OTPType.OTP);
+    const otp = await this.otpService.generateTokenForSaller(
+      saller.id,
+      OTPType.OTP,
+    );
 
     await this.emailService.sendEmail({
       subject: 'Parolni tiklash',
       recipients: [saller.email],
       html: `Parolingizni tiklash uchun quyidagi code dan foydalaning: <strong>${otp}</strong>`,
-    })
-    return { message: 'OTP emailga yuborildi', otp: process.env.NODE_ENV === 'dev' ? otp : undefined }
+    });
+    return {
+      message: 'OTP emailga yuborildi',
+      otp: process.env.NODE_ENV === 'dev' ? otp : undefined,
+    };
   }
 
   async resetPassword(email: string, otp: string, newPassword: string) {

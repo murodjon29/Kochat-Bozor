@@ -55,11 +55,11 @@ export class CategoryService {
     try {
       if (!(await this.categoryRepository.findOne({ where: { id } })))
         throw new InternalServerErrorException('Category not found');
-      await this.categoryRepository.update(
-        id,
-        updateCategoryDto,
-      );
-      const category = await this.categoryRepository.findOne({ where: { id }, relations: ['products'] }); 
+      await this.categoryRepository.update(id, updateCategoryDto);
+      const category = await this.categoryRepository.findOne({
+        where: { id },
+        relations: ['products'],
+      });
       return category;
     } catch (error) {
       throw new InternalServerErrorException(
