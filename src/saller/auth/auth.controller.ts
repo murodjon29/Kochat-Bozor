@@ -27,17 +27,20 @@ export class SallerAuthController {
   }
 
   @Post('confirm-signin')
-  async confirmSignin(
-    @Body() body: ConfirmSigninDto,
-  ) {
+  async confirmSignin(@Body() body: ConfirmSigninDto) {
     return this.authService.confirmSignin(body);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
   }
 
   @Post('reset-password')
   async resetPassword(
-    @Body() { token, password }: { token: string; password: string },
+    @Body() body: { email: string; otp: string; password: string },
   ) {
-    return this.authService.resetPassword(token, password);
+    return this.authService.resetPassword(body.email, body.otp, body.password);
   }
 
   @UseGuards(JwtAuthGuard, SelfGuard)

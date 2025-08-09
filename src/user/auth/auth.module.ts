@@ -8,6 +8,7 @@ import { forwardRef } from '@nestjs/common';
 import { UserModule } from '../user.module';
 import { UserAuthController } from './auth.controller';
 import { UserAuthService } from './auth.service';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserAuthService } from './auth.service';
       }),
     }),
     OTPModule,
+    EmailModule,
     forwardRef(() => UserModule),
   ],
   controllers: [UserAuthController],

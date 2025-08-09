@@ -153,7 +153,7 @@ export class SallerService {
         await this.emailService.sendEmail({
           recipients: [saller.email],
           subject: 'Tasdiqlash uchun code',
-          html: `Sizning code kodingiz: <strong>${token}</strong>. Hisobingizni tasdiqlash uchun ushbu  dan foydalaning`,
+          html: `Sizning code kodingiz: <strong>${token}</strong>. Hisobingizni tasdiqlash uchun ushbu code dan foydalaning`,
         });
       } else if (otpType === OTPType.RESET_LINK) {
         const resetLink = `${this.configService.get('RESET_PASSWORD_URL')}?token=${token}`;

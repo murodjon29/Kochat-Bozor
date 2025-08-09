@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +13,8 @@ import { OTPService } from 'src/utils/otp/otp.service';
 import { Role } from 'src/utils/enum';
 import { ConfigService } from '@nestjs/config';
 import { ResetPasswordDto } from './dto/reset-password';
+import { EmailService } from 'src/email/email.service';
+import { OTPType } from 'src/utils/otp/types/otp-type';
 
 interface UserLoginDto {
   email: string;
@@ -25,6 +28,7 @@ export class UserAuthService {
     private jwtService: JwtService,
     private otpService: OTPService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async validateUser(email: string, password: string): Promise<User> {
@@ -105,24 +109,39 @@ export class UserAuthService {
     }
   }
 
-  async resetPassword(dto: ResetPasswordDto): Promise<string> {
-    try {
-      const { token, newPassword } = dto;
-      const { id: userId } = await this.otpService.validateResetPassword(token);
+  async forgotPassword(email: string) {
 
+      // email.toLowerCase()
       const user = await this.userRepository.findOne({
-        where: { id: userId },
+        where: { email },
       });
-      if (!user) throw new BadRequestException('Foydalanuvchi topilmadi');
+  
+      if (!user) throw new NotFoundException('Email topilmadi');
+  
+      const otp = await this.otpService.generateTokenForUser(user.id, OTPType.OTP);
+  
+      await this.emailService.sendEmail({
+        subject: 'Parolni tiklash',
+        recipients: [user.email],
+        html: `Parolingizni tiklash uchun quyidagi code dan foydalaning: <strong>${otp}</strong>`,
+      })
+      return { message: 'OTP emailga yuborildi', otp: process.env.NODE_ENV === 'dev' ? otp : undefined }
+    }
 
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    email.toLowerCase()  
+    const user = await this.userRepository.findOne({
+        where: { email:  email},
+      });
+  
+      if (!user) throw new NotFoundException('Email topilmadi');
+  
+      const isValid = await this.otpService.validateUserOTP(user.id, otp);
+      if (!isValid) throw new BadRequestException('Noto‘g‘ri yoki eskirgan OTP');
+  
       user.password = await bcrypt.hash(newPassword, 10);
       await this.userRepository.save(user);
-
-      return 'Parol muvaffaqiyatli tiklandi';
-    } catch (error) {
-      throw new BadRequestException(
-        `Parolni tiklashda xato: ${error.message}`,
-      );
+  
+      return { message: 'Parol muvaffaqiyatli yangilandi' };
     }
-  }
 }

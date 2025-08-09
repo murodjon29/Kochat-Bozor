@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OTPModule } from '../../utils/otp/otp.module';
 import { forwardRef } from '@nestjs/common';
 import { SallerModule } from '../saller.module';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { SallerModule } from '../saller.module';
       }),
     }),
     OTPModule,
+    EmailModule,
     forwardRef(() => SallerModule),
   ],
   controllers: [SallerAuthController],

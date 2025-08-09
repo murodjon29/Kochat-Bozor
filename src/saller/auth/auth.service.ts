@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +13,8 @@ import { OTPService } from 'src/utils/otp/otp.service';
 import { Role } from 'src/utils/enum';
 import { ConfigService } from '@nestjs/config';
 import { ConfirmSigninDto } from './dto/confirim-signin.dto';
+import { OTPType } from 'src/utils/otp/types/otp-type';
+import { EmailService } from 'src/email/email.service';
 
 interface SallerLoginDto {
   email: string;
@@ -25,7 +28,9 @@ export class SallerAuthService {
     private jwtService: JwtService,
     private otpService: OTPService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
+
   async validateSaller(email: string, password: string): Promise<Saller> {
     const saller = await this.sallerRepository.findOne({
       where: { email: email.toLowerCase() },
@@ -71,6 +76,7 @@ export class SallerAuthService {
       role: saller.role,
     };
   }
+
   async confirmSignin(confirmSigninDto: ConfirmSigninDto) {
     try {
       const { email, otp } = confirmSigninDto;
@@ -110,28 +116,36 @@ export class SallerAuthService {
     }
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<string> {
-    try {
-      const { id: sallerId } = await this.otpService.validateResetPassword(
-        token,
-      );
+  async forgotPassword(email: string) {
+    const saller = await this.sallerRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
 
-      const saller = await this.sallerRepository.findOne({
-        where: { id: sallerId },
-      });
+    if (!saller) throw new NotFoundException('Email topilmadi');
 
-      if (!saller) {
-        throw new BadRequestException('Sotuvchi topilmadi');
-      }
+    const otp = await this.otpService.generateTokenForSaller(saller.id, OTPType.OTP);
 
-      saller.password = await bcrypt.hash(newPassword, 10);
-      await this.sallerRepository.save(saller);
+    await this.emailService.sendEmail({
+      subject: 'Parolni tiklash',
+      recipients: [saller.email],
+      html: `Parolingizni tiklash uchun quyidagi code dan foydalaning: <strong>${otp}</strong>`,
+    })
+    return { message: 'OTP emailga yuborildi', otp: process.env.NODE_ENV === 'dev' ? otp : undefined }
+  }
 
-      return 'Parol muvaffaqiyatli tiklandi';
-    } catch (error) {
-      throw new BadRequestException(
-        `Parolni tiklashda xato: ${error.message}`,
-      );
-    }
+  async resetPassword(email: string, otp: string, newPassword: string) {
+    const saller = await this.sallerRepository.findOne({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!saller) throw new NotFoundException('Email topilmadi');
+
+    const isValid = await this.otpService.validateSallerOTP(saller.id, otp);
+    if (!isValid) throw new BadRequestException('Noto‘g‘ri yoki eskirgan OTP');
+
+    saller.password = await bcrypt.hash(newPassword, 10);
+    await this.sallerRepository.save(saller);
+
+    return { message: 'Parol muvaffaqiyatli yangilandi' };
   }
 }
