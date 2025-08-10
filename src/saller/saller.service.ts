@@ -287,20 +287,31 @@ export class SallerService {
     }
   }
 
-  async myOrders(id: number) {
-    try {
-      const orders = await this.orderRepository.find({
-        where: { user: { id } },
-        relations: ['product', 'user'],
-      });
-      if (!orders) throw new NotFoundException(`Mahsulot topilmadi: ${id}`);
-      return orders;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Mahsulot olishda xato: ${error.message}`,
-      );
+  async myOrders(sallerId: number) {
+  try {
+    const orders = await this.orderRepository.find({
+      relations: ['product', 'product.saller', 'user'],
+      where: {
+        product: {
+          saller: {
+            id: sallerId
+          }
+        }
+      }
+    });
+
+    if (!orders || orders.length === 0) {
+      throw new NotFoundException(`Sotuvchiga tegishli buyurtmalar topilmadi: ${sallerId}`);
     }
+
+    return orders;
+  } catch (error) {
+    throw new InternalServerErrorException(
+      `Buyurtmalarni olishda xato: ${error.message}`,
+    );
   }
+}
+
 
   async getAllProducts() {
     try {
