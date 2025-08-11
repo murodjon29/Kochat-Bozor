@@ -53,6 +53,9 @@ export class OrderService {
     try {
       return await this.orderRepository.find({
         relations: ['product', 'user'],
+        order: {
+          createdAt: 'DESC',
+        }
       });
     } catch (error) {
       throw new InternalServerErrorException(
@@ -66,6 +69,9 @@ export class OrderService {
       const order = await this.orderRepository.findOne({
         where: { id },
         relations: ['product', 'user'],
+        order: {
+          createdAt: 'DESC',
+        }
       });
       if (!order) throw new NotFoundException(`Order not found id: ${id}`);
       return order;

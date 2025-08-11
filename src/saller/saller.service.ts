@@ -321,6 +321,10 @@ export class SallerService {
           saller: true,
           category: true,
         },
+        order: {
+          createdAt: 'DESC',
+        }
+        
       });
       if (!products || products.length === 0) {
         console.log("Ma'lumotlar bazasida mahsulotlar topilmadi");
