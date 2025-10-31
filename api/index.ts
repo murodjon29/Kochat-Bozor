@@ -10,7 +10,7 @@ import { AllExceptionsFilter } from 'src/utils/exceptions/all-exceptions.filter'
 
 // aws-serverless-express require bilan
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const awsServerlessExpress = require('aws-serverless-express');
+import awsServerlessExpress from 'aws-serverless-express';
 const { createServer, proxy } = awsServerlessExpress;
 
 const expressApp = express();
