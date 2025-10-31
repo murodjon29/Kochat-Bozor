@@ -14,7 +14,7 @@ export class EmailService {
   ) {
     this.transporter = createTransport({
       host: this.configService.get<string>('EMAIL_HOST'),
-      port: +this.configService.get<number>('PORT'),
+      port: +this.configService.get<number>('API_PORT'),
       secure: false,
       auth: {
         user: this.configService.get<string>('EMAIL_USER'),
